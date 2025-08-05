@@ -9,6 +9,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ### Added
 
+- New Workflows for updating trivy and the plugin to their latest versions
+
 ### Changed
 
 ### Fixed
@@ -19,7 +21,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ### Security
 
-## [25.08.05.1] - 2025-08-05
+## [25.08.05.0] - 2025-08-05
 
 ### Added
 - Trivy configuration merging: Automatic combination of template configuration with local `trivy.yaml`
