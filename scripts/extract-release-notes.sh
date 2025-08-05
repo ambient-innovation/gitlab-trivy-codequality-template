@@ -57,6 +57,11 @@ extract_unreleased_content() {
             break
         fi
         
+        # Stop at Usage, How to Update, or similar documentation sections
+        if [[ "$line" =~ ^\#\#[[:space:]]*(Usage|Verwendung|How[[:space:]]to[[:space:]]Update|Wie[[:space:]]man[[:space:]]das[[:space:]]Changelog) ]] && [ "$in_unreleased_section" = true ]; then
+            break
+        fi
+        
         # If we're in the unreleased section, capture content
         if [ "$in_unreleased_section" = true ]; then
             # Skip empty lines at the beginning
