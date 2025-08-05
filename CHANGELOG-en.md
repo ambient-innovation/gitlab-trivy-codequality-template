@@ -19,6 +19,20 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ### Security
 
+## [25.08.05.1] - 2025-08-05
+
+### Added
+
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security
+
 ## [25.08.05.0] - 2025-08-05
 
 ### Added
