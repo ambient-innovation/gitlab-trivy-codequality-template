@@ -47,7 +47,7 @@ jobs:
           DAY=$(date +%d)
           
           # Get the latest tag for today to determine micro version
-          TODAY_TAG_PREFIX="${YEAR}.${MONTH}.${DAY}"
+          TODAY_TAG_PREFIX="v${YEAR}.${MONTH}.${DAY}"
           LATEST_TODAY_TAG=$(git tag -l "${TODAY_TAG_PREFIX}.*" | sort -V | tail -n 1)
           
           if [ -z "$LATEST_TODAY_TAG" ]; then
