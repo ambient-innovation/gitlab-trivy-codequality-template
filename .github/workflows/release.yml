@@ -143,11 +143,17 @@ jobs:
           
           echo "🔧 Preparing templates for release v${VERSION}..."
           
-          # Update the TRIVY_TEMPLATE_CONFIG_URL in the main template file
-          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/.*/releases/latest/download/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml
-          
-          # Also handle the case where it might still point to main branch
-          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://raw.githubusercontent.com/.*/main/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml
+          # Update outdated version numbers in template files to the new release version
+          for file in trivy-scanning.template.yaml config-checks.template.yaml license-checks.template.yaml security-checks.template.yaml; do
+            if [ -f "$file" ]; then
+              # Replace any previous version number in the release asset URL with the new version
+              sed -i "s|https://github.com/.*/releases/download/v[0-9.]\+/\(.*\.template\.yaml\)|https://github.com/${{ github.repository }}/releases/download/v${VERSION}/\1|g" "$file"
+              # Also handle URLs pointing to 'latest'
+              sed -i "s|https://github.com/.*/releases/latest/download/\(.*\.template\.yaml\)|https://github.com/${{ github.repository }}/releases/download/v${VERSION}/\1|g" "$file"
+              # Also handle URLs pointing to main branch
+              sed -i "s|https://raw.githubusercontent.com/.*/main/\(.*\.template\.yaml\)|https://github.com/${{ github.repository }}/releases/download/v${VERSION}/\1|g" "$file"
+            fi
+          done
           
           echo "✅ Release template prepared with version-specific URL"
           echo "📋 Template URL updated to: https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml"

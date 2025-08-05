@@ -16,8 +16,8 @@
     FILENAME: "gl-codeclimate-$CI_JOB_NAME_SLUG.json"
     # Trivy configuration merging options
     TRIVY_CONFIG_MERGE: "true"  # Set to "false" to disable config merging
-    # NOTE: This URL points to 'latest' in main branch, but gets updated to specific version in releases
-    TRIVY_TEMPLATE_CONFIG_URL: "https://github.com/ambient-innovation/trivy-scanner-templates/releases/latest/download/trivy.template.yaml"
+    # NOTE: This URL must use an explicit release version, not 'latest'
+    TRIVY_TEMPLATE_CONFIG_URL: "https://github.com/ambient-innovation/trivy-scanner-templates/releases/download/v25.08.05.0/trivy.template.yaml"
     LOCAL_TRIVY_CONFIG: "trivy.yaml"  # Path to local trivy config (optional)
     MERGED_TRIVY_CONFIG: "${TRIVY_CACHE_DIR}trivy-merged.yaml"
     # Plugin options (optional)

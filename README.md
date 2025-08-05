@@ -74,7 +74,7 @@ Das Template lädt automatisch eine `trivy.template.yaml` vom Repository herunte
 #### Mit eigener Trivy-Konfiguration (🎯 Empfohlen)
 ```yaml
 # 1. Lade die trivy.template.yaml herunter (einmalig):
-# curl -o trivy.yaml https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/latest/download/trivy.template.yaml
+# curl -o trivy.yaml https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/download/v25.08.05.0/trivy.template.yaml
 
 # 2. Passe trivy.yaml nach deinen Bedürfnissen an
 
@@ -178,10 +178,6 @@ Dieses Projekt verwendet Calendar Versioning (CalVer) im Format `YY.MM.DD.MICRO`
 # ✅ Empfohlen: Spezifische Version verwenden
 include:
   - remote: 'https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/download/v25.08.05.0/trivy-scanning.template.yaml'
-
-# ⚠️ Vorsicht: Latest kann breaking changes enthalten
-include:
-  - remote: 'https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/latest/download/trivy-scanning.template.yaml'
 ```
 
 ### Automatische Releases
@@ -194,11 +190,6 @@ Releases werden automatisch erstellt wenn:
 
 Die neueste Version findest du unter [Releases](../../releases/latest).
 
-Beispiel für die Verwendung der neuesten Version:
-```yaml
-include:
-  - remote: 'https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/latest/download/trivy-scanning.template.yaml'
-```
 
 ## 🛠️ Entwicklung
 
