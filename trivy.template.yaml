@@ -1,7 +1,6 @@
 # Show no progress bar while downloading
 db:
   no-progress: true
-  java-skip-update: true
 
 # What severity issues shall be reported by default?
 severity:
