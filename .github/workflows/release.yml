@@ -94,7 +94,7 @@ jobs:
           chmod +x scripts/extract-release-notes.sh
           
           # Extract release notes from changelog
-          GITHUB_REPOSITORY="${{ github.repository }}" ./scripts/extract-release-notes.sh "$VERSION"
+          ./scripts/extract-release-notes.sh "$VERSION" "${{ github.repository }}"
           
           # If release notes extraction failed, create basic notes
           if [ ! -f "release_notes.md" ] || [ ! -s "release_notes.md" ]; then
@@ -188,22 +188,22 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           
-          echo "📝 Updating CHANGELOG.md for next development cycle..."
+          echo "📝 Updating changelogs for next development cycle..."
           
           # Make script executable and run it
           chmod +x scripts/update-changelog.sh
           ./scripts/update-changelog.sh "$VERSION"
           
-          # Commit the updated changelog back to the repository
+          # Commit the updated changelogs back to the repository
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
-          if git diff --quiet CHANGELOG.md; then
-            echo "ℹ️ No changes to CHANGELOG.md"
+          if git diff --quiet CHANGELOG.md CHANGELOG-en.md; then
+            echo "ℹ️ No changes to changelog files"
           else
-            git add CHANGELOG.md
-            git commit -m "chore: update CHANGELOG.md for v$VERSION release [skip ci]"
+            git add CHANGELOG.md CHANGELOG-en.md
+            git commit -m "chore: update changelogs for v$VERSION release [skip ci]"
             
             git push origin main || git push origin master || echo "⚠️ Could not push changelog update"
-            echo "✅ Changelog updated and pushed to repository"
+            echo "✅ Changelogs updated and pushed to repository"
           fi

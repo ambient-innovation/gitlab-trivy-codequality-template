@@ -1,70 +1,129 @@
 #!/bin/bash
 
-# Script to extract release notes from CHANGELOG.md
-# Usage: ./extract-release-notes.sh <version>
+# Script to extract bilingual release notes from CHANGELOG.md and CHANGELOG-en.md
+# Usage: ./extract-release-notes.sh <version> [repository]
 
 set -e
 
 VERSION=${1:-""}
-CHANGELOG_FILE="CHANGELOG.md"
+REPOSITORY=${2:-""}
+CHANGELOG_DE="CHANGELOG.md"
+CHANGELOG_EN="CHANGELOG-en.md"
 OUTPUT_FILE="release_notes.md"
 
 if [ -z "$VERSION" ]; then
     echo "❌ Error: Version parameter required"
-    echo "Usage: $0 <version>"
+    echo "Usage: $0 <version> [repository]"
     exit 1
 fi
 
-if [ ! -f "$CHANGELOG_FILE" ]; then
-    echo "❌ Error: $CHANGELOG_FILE not found"
+if [ -z "$REPOSITORY" ]; then
+    echo "❌ Error: Repository parameter required"
+    echo "Usage: $0 <version> [repository]"
+    echo "Example: $0 25.08.05.0 mastacheata/gitlab-codequality-trivy"
     exit 1
 fi
 
-echo "📝 Extracting release notes for version $VERSION from $CHANGELOG_FILE..."
+if [ ! -f "$CHANGELOG_DE" ]; then
+    echo "❌ Error: $CHANGELOG_DE not found"
+    exit 1
+fi
+
+if [ ! -f "$CHANGELOG_EN" ]; then
+    echo "❌ Error: $CHANGELOG_EN not found"
+    exit 1
+fi
+
+echo "📝 Extracting bilingual release notes for version $VERSION..."
+echo "🔗 Repository: $REPOSITORY"
+
+# Function to extract unreleased content from a changelog
+extract_unreleased_content() {
+    local changelog_file="$1"
+    local temp_file="$2"
+    
+    in_unreleased_section=false
+    found_content=false
+    
+    while IFS= read -r line; do
+        # Start of Unreleased section
+        if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
+            in_unreleased_section=true
+            continue
+        fi
+        
+        # Start of next version section (end of Unreleased)
+        if [[ "$line" =~ ^\#\#[[:space:]]*\[.*\] ]] && [ "$in_unreleased_section" = true ]; then
+            break
+        fi
+        
+        # If we're in the unreleased section, capture content
+        if [ "$in_unreleased_section" = true ]; then
+            # Skip empty lines at the beginning
+            if [ "$found_content" = false ] && [ -z "$(echo "$line" | xargs)" ]; then
+                continue
+            fi
+            
+            found_content=true
+            echo "$line" >> "$temp_file"
+        fi
+    done < "$changelog_file"
+    
+    return 0
+}
 
 # Create release notes header
 cat > "$OUTPUT_FILE" << EOF
 # Release v$VERSION
 
-## What's New
-
 EOF
 
-# Extract the [Unreleased] section from CHANGELOG.md
-# This assumes the changelog follows the Keep a Changelog format
-in_unreleased_section=false
-in_content=false
+# Extract German content
+echo "🇩🇪 Extracting German release notes..."
+TEMP_DE="temp_de.md"
+extract_unreleased_content "$CHANGELOG_DE" "$TEMP_DE"
 
-while IFS= read -r line; do
-    # Start of Unreleased section
-    if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
-        in_unreleased_section=true
-        continue
-    fi
+# Extract English content  
+echo "🇬🇧 Extracting English release notes..."
+TEMP_EN="temp_en.md"
+extract_unreleased_content "$CHANGELOG_EN" "$TEMP_EN"
+
+# Check if we have content in both files
+if [ -s "$TEMP_DE" ] && [ -s "$TEMP_EN" ]; then
+    echo "📝 Creating bilingual release notes..."
     
-    # Start of next version section (end of Unreleased)
-    if [[ "$line" =~ ^\#\#[[:space:]]*\[.*\] ]] && [ "$in_unreleased_section" = true ]; then
-        break
-    fi
+    # Add German section
+    cat >> "$OUTPUT_FILE" << EOF
+## 🇩🇪 Was ist neu (Deutsch)
+
+EOF
+    cat "$TEMP_DE" >> "$OUTPUT_FILE"
     
-    # Skip until we find content after the Unreleased header
-    if [ "$in_unreleased_section" = true ]; then
-        # Skip empty lines right after the header
-        if [[ -z "$line" ]] && [ "$in_content" = false ]; then
-            continue
-        fi
-        
-        # We found content
-        if [[ -n "$line" ]]; then
-            in_content=true
-        fi
-        
-        # Add content to release notes
-        if [ "$in_content" = true ]; then
-            echo "$line" >> "$OUTPUT_FILE"
-        fi
-    fi
-done < "$CHANGELOG_FILE"
+    # Add English section
+    cat >> "$OUTPUT_FILE" << EOF
+
+## 🇬🇧 What's New (English)
+
+EOF
+    cat "$TEMP_EN" >> "$OUTPUT_FILE"
+    
+elif [ -s "$TEMP_DE" ]; then
+    echo "📝 Creating German-only release notes..."
+    cat "$TEMP_DE" >> "$OUTPUT_FILE"
+    
+elif [ -s "$TEMP_EN" ]; then
+    echo "📝 Creating English-only release notes..."
+    cat "$TEMP_EN" >> "$OUTPUT_FILE"
+    
+else
+    echo "⚠️ No content found in either changelog, creating minimal release notes..."
+    cat >> "$OUTPUT_FILE" << EOF
+## Changes
+
+- Updated Trivy scanning templates
+
+EOF
+fi
 
 # Add template files section
 cat >> "$OUTPUT_FILE" << EOF
@@ -73,44 +132,33 @@ cat >> "$OUTPUT_FILE" << EOF
 
 This release includes the following template files:
 
-- \`trivy-scanning.template.yaml\` (✅ **Recommended**)
+- \`trivy-scanning.template.yaml\` (🔍 **Scanning workflow template**)
 - \`trivy.template.yaml\` (📋 **Configuration template**)
-- \`config-checks.template.yaml\` (⚠️ **Deprecated** - migrate to trivy-scanning.template.yaml)
-- \`license-checks.template.yaml\` (⚠️ **Deprecated** - migrate to trivy-scanning.template.yaml)
-- \`security-checks.template.yaml\` (⚠️ **Deprecated** - migrate to trivy-scanning.template.yaml)
-
-## 🎯 Version Consistency
-
-This release ensures **version consistency** by:
-- The \`trivy-scanning.template.yaml\` in this release references the \`trivy.template.yaml\` from **this same release**
-- No dependency on main branch files when using released templates
-- Guaranteed compatibility between template and configuration files
 
 ## 🚀 Usage
 
-Include these templates in your GitLab CI/CD pipeline:
-
 \`\`\`yaml
 include:
-  - remote: 'https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/trivy-scanning.template.yaml'
-
-# Optional: Download trivy configuration template
-# curl -o trivy.yaml https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/trivy.template.yaml
+  - remote: 'https://github.com/$REPOSITORY/releases/download/v$VERSION/trivy-scanning.template.yaml'
 \`\`\`
 
 ## 🔗 Direct Download Links
 
-- [trivy-scanning.template.yaml](https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/trivy-scanning.template.yaml) (✅ Recommended)
-- [trivy.template.yaml](https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/trivy.template.yaml) (📋 Configuration)
-- [config-checks.template.yaml](https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/config-checks.template.yaml) (⚠️ Deprecated)
-- [license-checks.template.yaml](https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/license-checks.template.yaml) (⚠️ Deprecated)
-- [security-checks.template.yaml](https://github.com/\${GITHUB_REPOSITORY}/releases/download/v$VERSION/security-checks.template.yaml) (⚠️ Deprecated)
+- [trivy-scanning.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/trivy-scanning.template.yaml) (🔍 **Recommended**)
+- [trivy.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/trivy.template.yaml) (📋 **Configuration**)
+- [config-checks.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/config-checks.template.yaml) (⚠️ **Deprecated**)
+- [license-checks.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/license-checks.template.yaml) (⚠️ **Deprecated**)
+- [security-checks.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/security-checks.template.yaml) (⚠️ **Deprecated**)
+
 EOF
 
-echo "✅ Release notes generated: $OUTPUT_FILE"
+# Clean up temporary files
+rm -f "$TEMP_DE" "$TEMP_EN"
+
+echo "✅ Release notes created: $OUTPUT_FILE"
+
+# Show preview
 echo ""
-echo "📋 Preview:"
-echo "----------------------------------------"
-head -20 "$OUTPUT_FILE"
-echo "..."
-echo "----------------------------------------"
+echo "📋 Release Notes Preview:"
+echo "========================"
+cat "$OUTPUT_FILE"
