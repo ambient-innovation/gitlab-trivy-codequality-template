@@ -9,6 +9,20 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security
+
+## [25.08.05.1] - 2025-08-05
+
+### Added
+
 - New Workflows for updating trivy and the plugin to their latest versions
 
 ### Changed
