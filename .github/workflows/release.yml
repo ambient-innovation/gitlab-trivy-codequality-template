@@ -143,21 +143,14 @@ jobs:
           
           echo "🔧 Preparing templates for release v${VERSION}..."
           
-          # Create release-specific copy of trivy-scanning.template.yaml
-          cp trivy-scanning.template.yaml trivy-scanning.template.yaml.release
-          
-          # Update the TRIVY_TEMPLATE_CONFIG_URL to point to this specific release
-          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/.*/releases/latest/download/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml.release
+          # Update the TRIVY_TEMPLATE_CONFIG_URL in the main template file
+          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/.*/releases/latest/download/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml
           
           # Also handle the case where it might still point to main branch
-          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://raw.githubusercontent.com/.*/main/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml.release
+          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://raw.githubusercontent.com/.*/main/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml
           
           echo "✅ Release template prepared with version-specific URL"
           echo "📋 Template URL updated to: https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml"
-          
-          # Show the difference
-          echo "🔍 Changes made to template:"
-          diff trivy-scanning.template.yaml trivy-scanning.template.yaml.release || true
           
       - name: Create GitHub Release
         if: steps.check_release.outputs.create_release == 'true'
@@ -169,13 +162,13 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            trivy-scanning.template.yaml.release:trivy-scanning.template.yaml
+            trivy-scanning.template.yaml
             trivy.template.yaml
             config-checks.template.yaml
             license-checks.template.yaml
             security-checks.template.yaml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Output release information
         if: steps.check_release.outputs.create_release == 'true'
