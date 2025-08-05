@@ -1,0 +1,38 @@
+# ⚠️ DEPRECATION WARNING ⚠️
+# This template is DEPRECATED and will be removed in a future version.
+# Please migrate to the new unified trivy-scanning.template.yaml
+# 
+# Migration guide:
+# Replace this:
+#   extends: .license_scanning
+# With this:
+#   extends: .trivy_scanning
+#   variables:
+#     IMAGE: "your-image:tag"  # Required for license scanning
+#     PLUGIN_SEVERITY_LICENSE: "HIGH,CRITICAL,UNKNOWN"
+#     PLUGIN_PKG_TYPES_LICENSE: "library,os"
+#
+# For more information, see: https://github.com/REPO/releases/latest
+
+.license_scanning:
+  extends: .trivy_scanning
+  variables:
+    # Deprecated: Use the new trivy_scanning template directly
+    PLUGIN_SEVERITY_LICENSE: "HIGH,CRITICAL,UNKNOWN"
+    PLUGIN_PKG_TYPES_LICENSE: "library,os"
+    # Override scanner types for license-only scanning
+    TRIVY_SCANNERS: "license"
+  before_script:
+    # Show deprecation warning
+    - echo "⚠️  WARNING: The .license_scanning template is DEPRECATED!"
+    - echo "⚠️  Please migrate to .trivy_scanning template."
+    - echo "⚠️  See migration guide: https://github.com/$CI_PROJECT_PATH/releases/latest"
+    - echo "⚠️  This template will be removed in a future version."
+    - echo "⚠️  Note: License scanning requires the IMAGE variable to be set!"
+    - echo ""
+    # Call parent before_script
+    - !reference [.trivy_scanning, before_script]
+
+# Include the new unified template
+include:
+  - remote: 'https://github.com/ambient-innovation/trivy-scanner-templates/releases/latest/download/trivy-scanning.template.yaml'

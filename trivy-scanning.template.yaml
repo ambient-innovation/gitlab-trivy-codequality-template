@@ -1,0 +1,184 @@
+.trivy_scanning:
+  image: 
+    name: ghcr.io/aquasecurity/trivy:0.65.0
+    entrypoint: [""]
+  tags:
+    - small-runner
+  stage: test
+  variables:
+    TRIVY_NO_PROGRESS: "true"
+    TRIVY_USERNAME: "$CI_REGISTRY_USER"
+    TRIVY_PASSWORD: "$CI_REGISTRY_PASSWORD"
+    TRIVY_AUTH_URL: "$CI_REGISTRY"
+    TRIVY_PLUGIN_VERSION: "v1.2.0"
+    TRIVY_CACHE_DIR: ".trivycache/"
+    DIRECTORY: "./"
+    FILENAME: "gl-codeclimate-$CI_JOB_NAME_SLUG.json"
+    # Trivy configuration merging options
+    TRIVY_CONFIG_MERGE: "true"  # Set to "false" to disable config merging
+    # NOTE: This URL points to 'latest' in main branch, but gets updated to specific version in releases
+    TRIVY_TEMPLATE_CONFIG_URL: "https://github.com/ambient-innovation/trivy-scanner-templates/releases/latest/download/trivy.template.yaml"
+    LOCAL_TRIVY_CONFIG: "trivy.yaml"  # Path to local trivy config (optional)
+    MERGED_TRIVY_CONFIG: "${TRIVY_CACHE_DIR}trivy-merged.yaml"
+    # Plugin options (optional)
+    PLUGIN_SEVERITY: ""
+    PLUGIN_SEVERITY_LICENSE: ""
+    PLUGIN_SEVERITY_VULN: ""
+    PLUGIN_SEVERITY_MISCONFIG: ""
+    PLUGIN_SEVERITY_SECRET: ""
+    PLUGIN_PKG_TYPES: ""
+    PLUGIN_PKG_TYPES_LICENSE: ""
+    PLUGIN_PKG_TYPES_VULN: ""
+    PLUGIN_PKG_TYPES_MISCONFIG: ""
+    PLUGIN_PKG_TYPES_SECRET: ""
+    PLUGIN_DEBUG: ""
+  before_script:
+    # Create cache directory if it doesn't exist
+    - if [ ! -e ${TRIVY_CACHE_DIR} ]; then mkdir -p ${TRIVY_CACHE_DIR}; fi
+    
+    # Install required tools for processing
+    - apk update && apk add --no-cache jq yq curl
+    
+    # Verify Trivy installation
+    - trivy version
+    
+    # Handle Trivy configuration merging
+    - |
+      if [ "${TRIVY_CONFIG_MERGE}" = "true" ]; then
+        echo "🔧 Setting up Trivy configuration..."
+        
+        # Download template config from repository
+        echo "📥 Downloading template configuration from: ${TRIVY_TEMPLATE_CONFIG_URL}"
+        curl -fsSL "${TRIVY_TEMPLATE_CONFIG_URL}" -o "${TRIVY_CACHE_DIR}trivy.template.yaml"
+        
+        # Check if local config exists
+        if [ -f "${LOCAL_TRIVY_CONFIG}" ]; then
+          echo "📋 Found local trivy config: ${LOCAL_TRIVY_CONFIG}"
+          echo "🔀 Merging template config with local config..."
+          
+          # Merge configs: template as base, local config overrides
+          yq eval-all '. as $item ireduce ({}; . *d+ $item)' \
+            "${TRIVY_CACHE_DIR}trivy.template.yaml" \
+            "${LOCAL_TRIVY_CONFIG}" > "${MERGED_TRIVY_CONFIG}"
+          
+          echo "✅ Merged configuration saved to: ${MERGED_TRIVY_CONFIG}"
+          echo "📝 Configuration preview:"
+          head -20 "${MERGED_TRIVY_CONFIG}"
+        else
+          echo "ℹ️  No local trivy config found (${LOCAL_TRIVY_CONFIG}), using template config only"
+          cp "${TRIVY_CACHE_DIR}trivy.template.yaml" "${MERGED_TRIVY_CONFIG}"
+        fi
+        
+        echo "🎯 Using Trivy config: ${MERGED_TRIVY_CONFIG}"
+      else
+        echo "⏭️  Trivy configuration merging disabled (TRIVY_CONFIG_MERGE=false)"
+        if [ -f "${LOCAL_TRIVY_CONFIG}" ]; then
+          echo "📋 Using local trivy config: ${LOCAL_TRIVY_CONFIG}"
+          cp "${LOCAL_TRIVY_CONFIG}" "${MERGED_TRIVY_CONFIG}"
+        else
+          echo "ℹ️  No configuration files specified"
+        fi
+      fi
+    
+    # Install trivy-plugin-gitlab-codequality
+    - trivy plugin install https://github.com/ambient-innovation/trivy-plugin-gitlab-codequality/releases/download/${TRIVY_PLUGIN_VERSION}/plugin.tar.gz
+    
+    # Verify plugin installation
+    - trivy plugin list
+  allow_failure: true
+  script:
+    # Determine config argument for trivy commands
+    - |
+      CONFIG_ARG=""
+      if [ -f "${MERGED_TRIVY_CONFIG}" ]; then
+        CONFIG_ARG="--config ${MERGED_TRIVY_CONFIG}"
+        echo "🎯 Using Trivy configuration: ${MERGED_TRIVY_CONFIG}"
+      else
+        echo "ℹ️  No Trivy configuration file found, using default settings"
+      fi
+    
+    # Image scan (if IMAGE variable is set)
+    - |
+      if [ ! -z "$IMAGE" ]; then
+        echo "Running image scan on: $IMAGE"
+        trivy image $CONFIG_ARG --exit-code 0 --format json -o trivy-image.json $IMAGE
+      else
+        echo "No IMAGE variable set, skipping image scan"
+      fi
+    
+    # Filesystem scan (if DIRECTORY variable is set)
+    - |
+      if [ ! -z "$DIRECTORY" ]; then
+        echo "Running filesystem scan on: $DIRECTORY"
+        trivy filesystem $CONFIG_ARG --exit-code 0 --format json -o trivy-fs.json $DIRECTORY
+      else
+        echo "No DIRECTORY variable set, skipping filesystem scan"
+      fi
+    
+    # Convert to GitLab CodeQuality format using the plugin
+    - |
+      # Build plugin arguments dynamically
+      PLUGIN_ARGS=""
+      if [ ! -z "$PLUGIN_SEVERITY" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --severity $PLUGIN_SEVERITY"; fi
+      if [ ! -z "$PLUGIN_SEVERITY_LICENSE" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --severity-license $PLUGIN_SEVERITY_LICENSE"; fi
+      if [ ! -z "$PLUGIN_SEVERITY_VULN" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --severity-vuln $PLUGIN_SEVERITY_VULN"; fi
+      if [ ! -z "$PLUGIN_SEVERITY_MISCONFIG" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --severity-misconfig $PLUGIN_SEVERITY_MISCONFIG"; fi
+      if [ ! -z "$PLUGIN_SEVERITY_SECRET" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --severity-secret $PLUGIN_SEVERITY_SECRET"; fi
+      if [ ! -z "$PLUGIN_PKG_TYPES" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types $PLUGIN_PKG_TYPES"; fi
+      if [ ! -z "$PLUGIN_PKG_TYPES_LICENSE" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-license $PLUGIN_PKG_TYPES_LICENSE"; fi
+      if [ ! -z "$PLUGIN_PKG_TYPES_VULN" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-vuln $PLUGIN_PKG_TYPES_VULN"; fi
+      if [ ! -z "$PLUGIN_PKG_TYPES_MISCONFIG" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-misconfig $PLUGIN_PKG_TYPES_MISCONFIG"; fi
+      if [ ! -z "$PLUGIN_PKG_TYPES_SECRET" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-secret $PLUGIN_PKG_TYPES_SECRET"; fi
+      if [ ! -z "$PLUGIN_DEBUG" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --debug"; fi
+      
+      if [ -f trivy-image.json ] && [ -f trivy-fs.json ]; then
+        echo "Combining image and filesystem results"
+        jq -s 'add' trivy-image.json trivy-fs.json > trivy-combined.json
+        echo "Converting combined results to GitLab CodeQuality format"
+        trivy gitlab-codequality --input trivy-combined.json --output ${FILENAME} $PLUGIN_ARGS
+      elif [ -f trivy-image.json ]; then
+        echo "Converting image results to GitLab CodeQuality format"
+        trivy gitlab-codequality --input trivy-image.json --output ${FILENAME} $PLUGIN_ARGS
+      elif [ -f trivy-fs.json ]; then
+        echo "Converting filesystem results to GitLab CodeQuality format"
+        trivy gitlab-codequality --input trivy-fs.json --output ${FILENAME} $PLUGIN_ARGS
+      else
+        echo "No scan results found, creating empty report"
+        echo "[]" > ${FILENAME}
+      fi
+    
+    # Check the number of issues found and exit with appropriate code
+    - |
+      if [ -f "${FILENAME}" ]; then
+        ISSUE_COUNT=$(jq 'length' "${FILENAME}")
+        echo "Found $ISSUE_COUNT issues in CodeQuality report"
+        
+        if [ "$ISSUE_COUNT" -eq 0 ]; then
+          echo "No issues found, exiting with code 0"
+          exit 0
+        else
+          # Cap exit code at 255 (maximum for most systems)
+          if [ "$ISSUE_COUNT" -gt 255 ]; then
+            echo "Issue count ($ISSUE_COUNT) exceeds maximum exit code, capping at 255"
+            exit 255
+          else
+            echo "Exiting with code $ISSUE_COUNT (number of issues found)"
+            exit $ISSUE_COUNT
+          fi
+        fi
+      else
+        echo "CodeQuality report not found, exiting with code 1"
+        exit 1
+      fi
+  cache:
+    paths:
+      - $TRIVY_CACHE_DIR
+  artifacts:
+    paths:
+      - $FILENAME
+      - trivy-image.json
+      - trivy-fs.json
+      - trivy-combined.json
+    reports:
+      codequality: $FILENAME
+    when: always

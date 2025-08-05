@@ -1,0 +1,216 @@
+name: Create Release with CalVer
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'trivy-scanning.template.yaml'
+      - 'trivy.template.yaml'
+      - 'config-checks.template.yaml'
+      - 'license-checks.template.yaml'
+      - 'security-checks.template.yaml'
+      - 'CHANGELOG.md'
+      - 'CHANGELOG-en.md'
+      - 'README.md'
+      - 'README-en.md'
+      - 'CONTRIBUTING.md'
+      - 'CONTRIBUTING-en.md'
+  workflow_dispatch:
+    inputs:
+      force_release:
+        description: 'Force create release even without changes'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Generate CalVer version
+        id: version
+        run: |
+          # Generate CalVer version (YY.MM.DD.micro)
+          YEAR=$(date +%y)
+          MONTH=$(date +%m)
+          DAY=$(date +%d)
+          
+          # Get the latest tag for today to determine micro version
+          TODAY_TAG_PREFIX="${YEAR}.${MONTH}.${DAY}"
+          LATEST_TODAY_TAG=$(git tag -l "${TODAY_TAG_PREFIX}.*" | sort -V | tail -n 1)
+          
+          if [ -z "$LATEST_TODAY_TAG" ]; then
+            MICRO=0
+          else
+            MICRO=$(echo "$LATEST_TODAY_TAG" | cut -d'.' -f4)
+            MICRO=$((MICRO + 1))
+          fi
+          
+          VERSION="${YEAR}.${MONTH}.${DAY}.${MICRO}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Generated version: ${VERSION}"
+          
+      - name: Check if release needed
+        id: check_release
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          FORCE_RELEASE="${{ github.event.inputs.force_release }}"
+          
+          # Check if tag already exists
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists"
+            echo "create_release=false" >> $GITHUB_OUTPUT
+          elif [ "$FORCE_RELEASE" = "true" ]; then
+            echo "Force release requested"
+            echo "create_release=true" >> $GITHUB_OUTPUT
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            echo "Push trigger detected, creating release"
+            echo "create_release=true" >> $GITHUB_OUTPUT
+          else
+            echo "No release needed"
+            echo "create_release=false" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Create release notes
+        id: release_notes
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "📝 Generating release notes from CHANGELOG.md..."
+          
+          # Make script executable and run it
+          chmod +x scripts/extract-release-notes.sh
+          
+          # Extract release notes from changelog
+          GITHUB_REPOSITORY="${{ github.repository }}" ./scripts/extract-release-notes.sh "$VERSION"
+          
+          # If release notes extraction failed, create basic notes
+          if [ ! -f "release_notes.md" ] || [ ! -s "release_notes.md" ]; then
+            echo "⚠️ Could not extract from CHANGELOG.md, creating basic release notes..."
+            
+            # Get the latest tag for changelog generation
+            LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            
+            echo "# Release v$VERSION" > release_notes.md
+            echo "" >> release_notes.md
+            echo "## Changes" >> release_notes.md
+            
+            if [ -n "$LATEST_TAG" ]; then
+              echo "" >> release_notes.md
+              echo "Changes since $LATEST_TAG:" >> release_notes.md
+              echo "" >> release_notes.md
+              git log ${LATEST_TAG}..HEAD --pretty=format:"- %s (%h)" >> release_notes.md || echo "- Updated Trivy scanning templates" >> release_notes.md
+            else
+              echo "" >> release_notes.md
+              echo "- Initial release of Trivy scanning templates" >> release_notes.md
+            fi
+            
+            # Add template files section
+            echo "" >> release_notes.md
+            echo "## 📦 Template Files" >> release_notes.md
+            echo "" >> release_notes.md
+            echo "This release includes the following template files:" >> release_notes.md
+            echo "" >> release_notes.md
+            echo "- \`trivy-scanning.template.yaml\` (🔍 **Scanning workflow template**)" >> release_notes.md
+            echo "- \`trivy.template.yaml\` (📋 **Configuration template**)" >> release_notes.md
+            echo "" >> release_notes.md
+            echo "## 🚀 Usage" >> release_notes.md
+            echo "" >> release_notes.md
+            echo "\`\`\`yaml" >> release_notes.md
+            echo "include:" >> release_notes.md
+            echo "  - remote: 'https://github.com/${{ github.repository }}/releases/download/v$VERSION/trivy-scanning.template.yaml'" >> release_notes.md
+            echo "\`\`\`" >> release_notes.md
+          fi
+          
+          echo "✅ Release notes prepared"
+          
+      - name: Prepare release templates
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "🔧 Preparing templates for release v${VERSION}..."
+          
+          # Create release-specific copy of trivy-scanning.template.yaml
+          cp trivy-scanning.template.yaml trivy-scanning.template.yaml.release
+          
+          # Update the TRIVY_TEMPLATE_CONFIG_URL to point to this specific release
+          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/.*/releases/latest/download/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml.release
+          
+          # Also handle the case where it might still point to main branch
+          sed -i "s|TRIVY_TEMPLATE_CONFIG_URL: \"https://raw.githubusercontent.com/.*/main/trivy.template.yaml\"|TRIVY_TEMPLATE_CONFIG_URL: \"https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml\"|g" trivy-scanning.template.yaml.release
+          
+          echo "✅ Release template prepared with version-specific URL"
+          echo "📋 Template URL updated to: https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml"
+          
+          # Show the difference
+          echo "🔍 Changes made to template:"
+          diff trivy-scanning.template.yaml trivy-scanning.template.yaml.release || true
+          
+      - name: Create GitHub Release
+        if: steps.check_release.outputs.create_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "Release v${{ steps.version.outputs.version }}"
+          body_path: "release_notes.md"
+          draft: false
+          prerelease: false
+          files: |
+            trivy-scanning.template.yaml.release:trivy-scanning.template.yaml
+            trivy.template.yaml
+            config-checks.template.yaml
+            license-checks.template.yaml
+            security-checks.template.yaml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}}
+          
+      - name: Output release information
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          echo "✅ Release v${{ steps.version.outputs.version }} created successfully!"
+          echo "📦 Release URL: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+          echo ""
+          echo "🔗 Template URLs:"
+          echo "   ✅ trivy-scanning.template.yaml (RECOMMENDED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/trivy-scanning.template.yaml"
+          echo "   📋 trivy.template.yaml (CONFIG): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/trivy.template.yaml"
+          echo "   ⚠️  config-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/config-checks.template.yaml"
+          echo "   ⚠️  license-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/license-checks.template.yaml"
+          echo "   ⚠️  security-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/security-checks.template.yaml"
+          
+      - name: Update changelog for next development
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          
+          echo "📝 Updating CHANGELOG.md for next development cycle..."
+          
+          # Make script executable and run it
+          chmod +x scripts/update-changelog.sh
+          ./scripts/update-changelog.sh "$VERSION"
+          
+          # Commit the updated changelog back to the repository
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          if git diff --quiet CHANGELOG.md; then
+            echo "ℹ️ No changes to CHANGELOG.md"
+          else
+            git add CHANGELOG.md
+            git commit -m "chore: update CHANGELOG.md for v$VERSION release [skip ci]"
+            
+            git push origin main || git push origin master || echo "⚠️ Could not push changelog update"
+            echo "✅ Changelog updated and pushed to repository"
+          fi

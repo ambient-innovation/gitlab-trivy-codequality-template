@@ -1,0 +1,259 @@
+# Show no progress bar while downloading
+db:
+  no-progress: true
+  java-skip-update: true
+
+# What severity issues shall be reported by default?
+severity:
+ - UNKNOWN
+ - CRITICAL
+ - HIGH
+ - MEDIUM
+ - LOW
+
+# Where to store cache for trivy
+cache:
+  dir: ".trivycache/"
+
+exit-code: 1
+
+# Default scanners to run (we scan images by default and thus don't include the misconfig scanner
+scan:
+  scanners:
+    - vuln
+    - secret
+    - license
+    - misconfig
+
+vulnerabilities:
+  ignore-unfixed: true
+
+license:
+    confidencelevel: "0.9"
+    forbidden:
+        - AGPL
+        - AGPL-1.0
+        - AGPL-3.0
+        - CC-BY-NC-1.0
+        - CC-BY-NC-2.0
+        - CC-BY-NC-2.5
+        - CC-BY-NC-3.0
+        - CC-BY-NC-4.0
+        - CC-BY-NC-ND-1.0
+        - CC-BY-NC-ND-2.0
+        - CC-BY-NC-ND-2.5
+        - CC-BY-NC-ND-3.0
+        - CC-BY-NC-ND-4.0
+        - CC-BY-NC-SA-1.0
+        - CC-BY-NC-SA-2.0
+        - CC-BY-NC-SA-2.5
+        - CC-BY-NC-SA-3.0
+        - CC-BY-NC-SA-4.0
+        - Commons-Clause
+        - Facebook-2-Clause
+        - Facebook-3-Clause
+        - Facebook-Examples
+    full: false
+    ignored: []
+    notice:
+        - (AFL-2.1 OR BSD-3-Clause)
+        - (Apache-2.0 OR MPL-1.1)
+        - (BSD-2-Clause OR MIT OR Apache-2.0)
+        - (BSD-3-Clause OR GPL-2.0)
+        - (MIT AND BSD-3-Clause)
+        - (MIT AND Zlib)
+        - (MIT OR Apache-2.0)
+        - (MIT OR CC0-1.0)
+        - AFL-1.1
+        - AFL-1.2
+        - AFL-2.0
+        - AFL-2.1
+        - AFL-3.0
+        - Apache 2
+        - Apache License 2.0
+        - Apache License, Version 2.0
+        - Apache Software License
+        - Apache Software License 2.0
+        - Apache-2
+        - Apache-1.0
+        - Apache-1.1
+        - Apache-2.0
+        - Apache-2.0 license
+        - Apache-2.0 with LLVM exception
+        - Artistic
+        - Artistic License
+        - Artistic-1.0
+        - Artistic-1.0-cl8
+        - Artistic-1.0-Perl
+        - Artistic-2.0
+        - ASL
+        - BSD 3-Clause
+        - BSD 3-Clause License
+        - BSD 3-Clause License or Apache License
+        - BSD License
+        - BSD-2
+        - BSD-2-Clause
+        - BSD-2-Clause-FreeBSD
+        - BSD-2-Clause-NetBSD
+        - BSD-3-Clause
+        - BSD-3-clause and/or GPL-3+
+        - BSD-3-Clause-Attribution
+        - BSD-3-Clause-Clear
+        - BSD-3-clause-generic
+        - BSD-3-Clause-LBNL
+        - BSD-3-clause-pcre
+        - BSD-4
+        - BSD-4-Clause
+        - BSD-4-Clause-UC
+        - BSD-like
+        - BSD-Protection
+        - BSL-1.0
+        - CC-BY-1.0
+        - CC-BY-2.0
+        - CC-BY-2.5
+        - CC-BY-3.0
+        - CC-BY-4.0
+        - Expat
+        - Expat license
+        - Expat License
+        - FreeBSD License
+        - FTL
+        - Historical Permission Notice and Disclaimer (HPND)
+        - HPND
+        - ImageMagick
+        - ISC
+        - ISC license
+        - Libpng
+        - Lil-1.0
+        - Linux-OpenIB
+        - LPL-1.0
+        - LPL-1.02
+        - MIT
+        - MIT Licences
+        - MIT License
+        - MIT license
+        - MIT OR Apache-2.0
+        - MIT-CMU
+        - MIT-like
+        - MIT/Expat
+        - MIT/X11
+        - MPL-2.0 AND MIT
+        - MS-PL
+        - NCSA
+        - New BSD
+        - new BSD License
+        - ODC-By-1.0
+        - OpenSSL
+        - PHP-3.0
+        - PHP-3.01
+        - PIL
+        - PostgreSQL
+        - PSF-2.0
+        - Python license
+        - Python Software Foundation License
+        - Python-2.0
+        - Python-2.0-complete
+        - SGI-B-1.0
+        - SGI-B-1.1
+        - SGI-B-2.0
+        - Unicode-DFS-2015
+        - Unicode-DFS-2016
+        - Unicode-TOU
+        - UPL-1.0
+        - W3C
+        - W3C-19980720
+        - W3C-20150513
+        - X11
+        - X11R5-permissive
+        - Xnet
+        - Zend-2.0
+        - Zlib
+        - zlib-acknowledgement
+        - ZPL 2.1
+        - ZPL-1.1
+        - ZPL-2.0
+        - ZPL-2.1
+    permissive: []
+    reciprocal:
+        - APSL-1.0
+        - APSL-1.1
+        - APSL-1.2
+        - APSL-2.0
+        - CDDL-1.0
+        - CDDL-1.1
+        - CPL-1.0
+        - EPL-1.0
+        - EPL-2.0
+        - FreeImage
+        - IPL-1.0
+        - Mozilla Public License 2.0 (MPL 2.0)
+        - MPL-1.0
+        - MPL-1.1
+        - MPL-2.0
+        - MPLv2.0
+        - Ruby
+    restricted:
+        - BCL
+        - CC-BY-ND-1.0
+        - CC-BY-ND-2.0
+        - CC-BY-ND-2.5
+        - CC-BY-ND-3.0
+        - CC-BY-ND-4.0
+        - CC-BY-SA-1.0
+        - CC-BY-SA-2.0
+        - CC-BY-SA-2.5
+        - CC-BY-SA-3.0
+        - CC-BY-SA-4.0
+        - GPL with automake exception
+        - GPL-1.0
+        - GPL-2.0
+        - GPL-2.0-with-autoconf-exception
+        - GPL-2.0-with-bison-exception
+        - GPL-2.0-with-classpath-exception
+        - GPL-2.0-with-font-exception
+        - GPL-2.0-with-GCC-exception
+        - GPL-2+ with Autoconf-data exception
+        - GPL-2+ with Texinfo exception
+        - GNU General Public License (GPL)
+        - GNU General Public License v2 (GPLv2)
+        - GNU General Public License v2 or later (GPLv2+)
+        - later (GPLv2+)
+        - GNU General Public License v2
+        - GPL-3.0
+        - GPL-3.0-with-autoconf-exception
+        - GPL-3.0-with-GCC-exception
+        - GPL-3+ with Autoconf-data exception
+        - GPL-3+ with texinfo exception
+        - GPL-unspecified
+        - GNU GPL 3
+        - LGPL-2.0
+        - LGPL-2.1
+        - LGPL-3.0
+        - GNU Lesser General Public License v3 (LGPLv3)
+        - NPL-1.0
+        - NPL-1.1
+        - OSL-1.0
+        - OSL-1.1
+        - OSL-2.0
+        - OSL-2.1
+        - OSL-3.0
+        - QPL-1.0
+        - Sleepycat
+    unencumbered:
+        - (WTFPL OR MIT)
+        - bitstream-vera
+        - 0BSD
+        - bzip2-1.0.6
+        - CC0-1.0
+        - check-gdk-cairo-permissive
+        - Dual License
+        - Kuchling-PD
+        - other
+        - public-domain
+        - public-domain-s-s-d
+        - unencumbered
+        - Unicode
+        - UNKNOWN
+        - Unlicense
+        - UNLICENSED
+        - WTFPL
