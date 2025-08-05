@@ -29,7 +29,7 @@ Include the templates in your `.gitlab-ci.yml`:
 
 ```yaml
 include:
-  - remote: 'https://github.com/YOUR-USERNAME/YOUR-REPO/releases/download/v24.08.05.0/trivy-scanning.template.yaml'
+  - remote: 'https://github.com/mastacheata/gitlab-codequality-trivy/releases/download/v25.08.05.0/trivy-scanning.template.yaml'
 
 stages:
   - test
@@ -74,7 +74,7 @@ The template automatically downloads a `trivy.template.yaml` from the repository
 #### With Custom Trivy Configuration (🎯 Recommended)
 ```yaml
 # 1. Download trivy.template.yaml (one-time):
-# curl -o trivy.yaml https://github.com/REPO/releases/latest/download/trivy.template.yaml
+# curl -o trivy.yaml https://github.com/mastacheata/gitlab-codequality-trivy/releases/latest/download/trivy.template.yaml
 
 # 2. Customize trivy.yaml according to your needs
 
@@ -177,11 +177,11 @@ This project uses Calendar Versioning (CalVer) in the format `YY.MM.DD.MICRO`:
 ```yaml
 # ✅ Recommended: Use specific version
 include:
-  - remote: 'https://github.com/REPO/releases/download/v24.08.05.0/trivy-scanning.template.yaml'
+  - remote: 'https://github.com/mastacheata/gitlab-codequality-trivy/releases/download/v25.08.05.0/trivy-scanning.template.yaml'
 
 # ⚠️ Caution: Latest may contain breaking changes
 include:
-  - remote: 'https://github.com/REPO/releases/latest/download/trivy-scanning.template.yaml'
+  - remote: 'https://github.com/mastacheata/gitlab-codequality-trivy/releases/latest/download/trivy-scanning.template.yaml'
 ```
 
 ### Automatic Releases
@@ -197,7 +197,7 @@ Find the latest version under [Releases](../../releases/latest).
 Example for using the latest version:
 ```yaml
 include:
-  - remote: 'https://github.com/YOUR-USERNAME/YOUR-REPO/releases/latest/download/trivy-scanning.template.yaml'
+  - remote: 'https://github.com/mastacheata/gitlab-codequality-trivy/releases/latest/download/trivy-scanning.template.yaml'
 ```
 
 ## 🛠️ Development

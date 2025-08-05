@@ -152,6 +152,37 @@ jobs:
           echo "✅ Release template prepared with version-specific URL"
           echo "📋 Template URL updated to: https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml"
           
+
+      - name: Update README files with release URLs
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          REPO="${{ github.repository }}"
+
+          echo "📝 Updating README files with release URLs for $REPO v$VERSION..."
+
+          # Update URLs in README.md
+          if [ -f "README.md" ]; then
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy-scanning.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy-scanning.template.yaml|g" README.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy.template.yaml|g" README.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/config-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/config-checks.template.yaml|g" README.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/license-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/license-checks.template.yaml|g" README.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/security-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/security-checks.template.yaml|g" README.md
+            echo "✅ README.md updated"
+          fi
+
+          # Update URLs in README-en.md
+          if [ -f "README-en.md" ]; then
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy-scanning.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy-scanning.template.yaml|g" README-en.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy.template.yaml|g" README-en.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/config-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/config-checks.template.yaml|g" README-en.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/license-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/license-checks.template.yaml|g" README-en.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/security-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/security-checks.template.yaml|g" README-en.md
+            echo "✅ README-en.md updated"
+          fi
+
+          echo "📋 README files updated with release asset URLs"
+          
       - name: Create GitHub Release
         if: steps.check_release.outputs.create_release == 'true'
         uses: softprops/action-gh-release@v2
