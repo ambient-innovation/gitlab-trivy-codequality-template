@@ -8,6 +8,20 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ## [Unreleased]
 
 ### Added
+
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security
+
+## [25.08.05.0] - 2025-08-05
+
+### Added
 - Trivy configuration merging: Automatic combination of template configuration with local `trivy.yaml`
 - Version consistency: Release templates always reference the correct version of configuration files
 - New configuration variables: `TRIVY_CONFIG_MERGE`, `TRIVY_TEMPLATE_CONFIG_URL`, `LOCAL_TRIVY_CONFIG`
