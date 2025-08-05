@@ -8,20 +8,6 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 ## [Unreleased]
 
 ### Added
-
-### Changed
-
-### Fixed
-
-### Deprecated
-
-### Removed
-
-### Security
-
-## [25.08.05.0] - 2025-08-05
-
-### Added
 - Trivy-Konfiguration Merging: Automatische Kombination von Template-Konfiguration mit lokaler `trivy.yaml`
 - Versionskonsistenz: Release-Templates referenzieren immer die korrekte Version der Konfigurationsdateien
 - Neue Konfigurationsvariablen: `TRIVY_CONFIG_MERGE`, `TRIVY_TEMPLATE_CONFIG_URL`, `LOCAL_TRIVY_CONFIG`
@@ -38,6 +24,10 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 - `config-checks.template.yaml` - Nutze stattdessen `trivy-scanning.template.yaml` mit `PLUGIN_SEVERITY_MISCONFIG`
 - `license-checks.template.yaml` - Nutze stattdessen `trivy-scanning.template.yaml` mit `PLUGIN_SEVERITY_LICENSE`  
 - `security-checks.template.yaml` - Nutze stattdessen `trivy-scanning.template.yaml` mit `PLUGIN_SEVERITY_VULN`
+
+### Removed
+
+### Security
 
 ## Verwendung
 
