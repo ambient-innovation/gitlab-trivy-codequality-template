@@ -1,0 +1,260 @@
+name: Update Trivy Image Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      force_update:
+        description: 'Force update even if version is the same'
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    # Run weekly on Mondays at 6:00 AM UTC
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-trivy-version:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Get latest Trivy version
+        id: trivy_version
+        run: |
+          echo "🔍 Fetching latest Trivy version from GitHub API..."
+          
+          # Get latest release version from GitHub API
+          LATEST_VERSION=$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | jq -r '.tag_name')
+          
+          if [ "$LATEST_VERSION" = "null" ] || [ -z "$LATEST_VERSION" ]; then
+            echo "❌ Failed to fetch latest Trivy version"
+            exit 1
+          fi
+          
+          # Remove 'v' prefix if present
+          LATEST_VERSION=$(echo "$LATEST_VERSION" | sed 's/^v//')
+          
+          echo "latest_version=${LATEST_VERSION}" >> $GITHUB_OUTPUT
+          echo "✅ Latest Trivy version: ${LATEST_VERSION}"
+          
+      - name: Get current Trivy version
+        id: current_version
+        run: |
+          echo "🔍 Extracting current Trivy version from template..."
+          
+          # Extract current version from trivy-scanning.template.yaml
+          CURRENT_VERSION=$(grep -E "name: ghcr.io/aquasecurity/trivy:" trivy-scanning.template.yaml | sed -E 's/.*trivy:([0-9]+\.[0-9]+\.[0-9]+).*/\1/')
+          
+          if [ -z "$CURRENT_VERSION" ]; then
+            echo "❌ Failed to extract current Trivy version"
+            exit 1
+          fi
+          
+          echo "current_version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
+          echo "✅ Current Trivy version: ${CURRENT_VERSION}"
+          
+      - name: Check if update needed
+        id: check_update
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          FORCE_UPDATE="${{ github.event.inputs.force_update }}"
+          
+          echo "🔄 Comparing versions:"
+          echo "   Current: ${CURRENT}"
+          echo "   Latest:  ${LATEST}"
+          
+          if [ "$CURRENT" = "$LATEST" ] && [ "$FORCE_UPDATE" != "true" ]; then
+            echo "ℹ️ Trivy is already at the latest version (${LATEST})"
+            echo "update_needed=false" >> $GITHUB_OUTPUT
+          else
+            echo "🚀 Update needed from ${CURRENT} to ${LATEST}"
+            echo "update_needed=true" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Update trivy-scanning.template.yaml
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          
+          echo "📝 Updating trivy-scanning.template.yaml..."
+          
+          # Update the Trivy image version
+          sed -i "s|ghcr.io/aquasecurity/trivy:${CURRENT}|ghcr.io/aquasecurity/trivy:${LATEST}|g" trivy-scanning.template.yaml
+          
+          echo "✅ Updated Trivy version from ${CURRENT} to ${LATEST}"
+          
+          # Show the changes
+          echo "🔍 Changes made:"
+          git diff trivy-scanning.template.yaml || true
+          
+      - name: Update CHANGELOG.md
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          
+          echo "📝 Updating CHANGELOG.md..."
+          
+          # Create a temporary file with the updated changelog
+          {
+            # Copy everything until [Unreleased] section
+            while IFS= read -r line; do
+              echo "$line"
+              if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
+                break
+              fi
+            done < CHANGELOG.md
+            
+            # Add the new entry to [Unreleased] section
+            echo ""
+            echo "### Changed"
+            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST}"
+            echo ""
+            
+            # Copy the rest of the file, skipping the old [Unreleased] content until next section
+            in_unreleased_section=false
+            found_next_section=false
+            
+            while IFS= read -r line; do
+              if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
+                in_unreleased_section=true
+                continue
+              fi
+              
+              # Start of next section (either version or other ##)
+              if [[ "$line" =~ ^\#\#[[:space:]] ]] && [ "$in_unreleased_section" = true ]; then
+                in_unreleased_section=false
+                found_next_section=true
+              fi
+              
+              if [ "$in_unreleased_section" = false ] && [ "$found_next_section" = true ]; then
+                echo "$line"
+              elif [ "$in_unreleased_section" = false ] && [ "$found_next_section" = false ]; then
+                # We haven't reached the [Unreleased] section yet, skip
+                continue
+              fi
+            done < CHANGELOG.md
+            
+          } > CHANGELOG.tmp && mv CHANGELOG.tmp CHANGELOG.md
+          
+          echo "✅ Updated CHANGELOG.md with Trivy version update"
+          
+      - name: Update CHANGELOG-en.md
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          
+          echo "📝 Updating CHANGELOG-en.md..."
+          
+          # Create a temporary file with the updated changelog
+          {
+            # Copy everything until [Unreleased] section
+            while IFS= read -r line; do
+              echo "$line"
+              if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
+                break
+              fi
+            done < CHANGELOG-en.md
+            
+            # Add the new entry to [Unreleased] section
+            echo ""
+            echo "### Changed"
+            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST}"
+            echo ""
+            
+            # Copy the rest of the file, skipping the old [Unreleased] content until next section
+            in_unreleased_section=false
+            found_next_section=false
+            
+            while IFS= read -r line; do
+              if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
+                in_unreleased_section=true
+                continue
+              fi
+              
+              # Start of next section (either version or other ##)
+              if [[ "$line" =~ ^\#\#[[:space:]] ]] && [ "$in_unreleased_section" = true ]; then
+                in_unreleased_section=false
+                found_next_section=true
+              fi
+              
+              if [ "$in_unreleased_section" = false ] && [ "$found_next_section" = true ]; then
+                echo "$line"
+              elif [ "$in_unreleased_section" = false ] && [ "$found_next_section" = false ]; then
+                # We haven't reached the [Unreleased] section yet, skip
+                continue
+              fi
+            done < CHANGELOG-en.md
+            
+          } > CHANGELOG-en.tmp && mv CHANGELOG-en.tmp CHANGELOG-en.md
+          
+          echo "✅ Updated CHANGELOG-en.md with Trivy version update"
+          
+      - name: Commit changes
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          
+          echo "💾 Committing changes..."
+          
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Add and commit changes
+          git add trivy-scanning.template.yaml CHANGELOG.md CHANGELOG-en.md
+          git commit -m "chore: update Trivy scanner from v${CURRENT} to v${LATEST}
+
+          Updated Trivy Docker image version in template
+          Updated changelog with version change
+          This will trigger a new release automatically"
+          
+          # Push changes
+          git push origin main
+          
+          echo "✅ Changes committed and pushed to main branch"
+          echo "🚀 This will automatically trigger a new release!"
+          
+      - name: Output summary
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          
+          echo "## 🎉 Trivy Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Successfully updated Trivy scanner**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **From:** v${CURRENT}" >> $GITHUB_STEP_SUMMARY
+          echo "- **To:** v${LATEST}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 Files Updated" >> $GITHUB_STEP_SUMMARY
+          echo "- \`trivy-scanning.template.yaml\` - Updated Docker image version" >> $GITHUB_STEP_SUMMARY
+          echo "- \`CHANGELOG.md\` - Added update entry" >> $GITHUB_STEP_SUMMARY
+          echo "- \`CHANGELOG-en.md\` - Added update entry" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "A new release will be automatically created with the updated Trivy version." >> $GITHUB_STEP_SUMMARY
+          
+      - name: No update needed
+        if: steps.check_update.outputs.update_needed == 'false'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          
+          echo "## ℹ️ No Update Needed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Trivy is already at the latest version: **v${CURRENT}**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To force an update, re-run this workflow with the 'Force update' option enabled." >> $GITHUB_STEP_SUMMARY
