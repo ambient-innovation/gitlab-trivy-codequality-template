@@ -11,6 +11,20 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ### Changed
 
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security
+
+## [25.08.06.2] - 2025-08-06
+
+### Added
+
+### Changed
+
 Tabellen-Ausgabe ist jetzt konfigurierbar
 
 ### Fixed
