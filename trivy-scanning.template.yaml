@@ -32,6 +32,7 @@
     PLUGIN_PKG_TYPES_MISCONFIG: ""
     PLUGIN_PKG_TYPES_SECRET: ""
     PLUGIN_DEBUG: ""
+    PLUGIN_TABLE: "true"
   before_script:
     # Create cache directory if it doesn't exist
     - if [ ! -e ${TRIVY_CACHE_DIR} ]; then mkdir -p ${TRIVY_CACHE_DIR}; fi
@@ -129,7 +130,8 @@
       if [ ! -z "$PLUGIN_PKG_TYPES_VULN" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-vuln $PLUGIN_PKG_TYPES_VULN"; fi
       if [ ! -z "$PLUGIN_PKG_TYPES_MISCONFIG" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-misconfig $PLUGIN_PKG_TYPES_MISCONFIG"; fi
       if [ ! -z "$PLUGIN_PKG_TYPES_SECRET" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --pkg-types-secret $PLUGIN_PKG_TYPES_SECRET"; fi
-      if [ ! -z "$PLUGIN_DEBUG" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --debug"; fi
+      if [ "$(echo "$PLUGIN_DEBUG" | tr '[:upper:]' '[:lower:]')" = "true" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --debug"; fi
+      if [ "$(echo "$PLUGIN_TABLE" | tr '[:upper:]' '[:lower:]')" = "true" ]; then PLUGIN_ARGS="$PLUGIN_ARGS --table"; fi
       
       if [ -f trivy-image.json ] && [ -f trivy-fs.json ]; then
         echo "Combining image and filesystem results"
