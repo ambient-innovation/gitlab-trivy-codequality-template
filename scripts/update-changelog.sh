@@ -54,9 +54,11 @@ update_changelog_file() {
         echo ""
         echo "## [$VERSION] - $RELEASE_DATE"
         
-        # Copy the old [Unreleased] content as the new version
+        # Copy the old [Unreleased] content as the new version, filtering out empty sections
         in_unreleased_section=false
         found_content=false
+        section_header=""
+        section_content=""
         
         while IFS= read -r line; do
             if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
@@ -66,6 +68,15 @@ update_changelog_file() {
             
             # Start of next version section
             if [[ "$line" =~ ^\#\#[[:space:]]*\[.*\] ]] && [ "$in_unreleased_section" = true ]; then
+                # Process the last section if it has content
+                if [ -n "$section_header" ] && [ -n "$(echo "$section_content" | grep -v '^\s*$')" ]; then
+                    echo "$section_header"
+                    trimmed=$(echo "$section_content" | sed '/^\s*$/d')
+                    if [ -n "$trimmed" ]; then
+                        echo "$trimmed"
+                        echo ""
+                    fi
+                fi
                 in_unreleased_section=false
                 found_content=true
                 echo "$line"
@@ -73,7 +84,27 @@ update_changelog_file() {
             fi
             
             if [ "$in_unreleased_section" = true ]; then
-                echo "$line"
+                if [[ "$line" =~ ^### ]]; then
+                    # If previous section had non-empty content, write it
+                    if [ -n "$section_header" ] && [ -n "$(echo "$section_content" | grep -v '^\s*$')" ]; then
+                        echo "$section_header"
+                        trimmed=$(echo "$section_content" | sed '/^\s*$/d')
+                        if [ -n "$trimmed" ]; then
+                            echo "$trimmed"
+                            echo ""
+                        fi
+                    fi
+                    section_header="$line"
+                    section_content=""
+                elif [ -n "$section_header" ]; then
+                    # Accumulate content for the current section
+                    if [ -z "$section_content" ]; then
+                        section_content="$line"
+                    else
+                        section_content="$section_content
+$line"
+                    fi
+                fi
             elif [ "$found_content" = true ]; then
                 echo "$line"
             fi

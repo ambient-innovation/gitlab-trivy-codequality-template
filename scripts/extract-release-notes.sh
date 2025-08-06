@@ -43,38 +43,58 @@ extract_unreleased_content() {
     local temp_file="$2"
     
     in_unreleased_section=false
-    found_content=false
-    
-    while IFS= read -r line; do
+    section_header=""
+    section_content=""
+    while IFS= read -r line || [ -n "$line" ]; do
         # Start of Unreleased section
         if [[ "$line" =~ ^\#\#[[:space:]]*\[Unreleased\] ]]; then
             in_unreleased_section=true
             continue
         fi
-        
         # Start of next version section (end of Unreleased)
         if [[ "$line" =~ ^\#\#[[:space:]]*\[.*\] ]] && [ "$in_unreleased_section" = true ]; then
             break
         fi
-        
         # Stop at Usage, How to Update, or similar documentation sections
         if [[ "$line" =~ ^\#\#[[:space:]]*(Usage|Verwendung|How[[:space:]]to[[:space:]]Update|Wie[[:space:]]man[[:space:]]das[[:space:]]Changelog) ]] && [ "$in_unreleased_section" = true ]; then
             break
         fi
-        
-        # If we're in the unreleased section, capture content
+
+        # If we're in the unreleased section, process sections
         if [ "$in_unreleased_section" = true ]; then
-            # Skip empty lines at the beginning
-            if [ "$found_content" = false ] && [ -z "$(echo "$line" | xargs)" ]; then
-                continue
+            if [[ "$line" =~ ^### ]]; then
+                # If previous section had non-empty content, write it
+                if [ -n "$section_header" ] && [ -n "$(echo "$section_content" | grep -v '^\s*$')" ]; then
+                    echo "$section_header" >> "$temp_file"
+                    # Remove leading/trailing blank lines and only print if not empty
+                    trimmed=$(echo "$section_content" | sed '/^\s*$/d')
+                    if [ -n "$trimmed" ]; then
+                        echo "$trimmed" >> "$temp_file"
+                        echo "" >> "$temp_file"
+                    fi
+                fi
+                section_header="$line"
+                section_content=""
+            elif [ -n "$section_header" ]; then
+                # Accumulate content for the current section, with real newlines
+                if [ -z "$section_content" ]; then
+                    section_content="$line"
+                else
+                    section_content="${section_content}
+${line}"
+                fi
             fi
-            
-            found_content=true
-            echo "$line" >> "$temp_file"
         fi
     done < "$changelog_file"
     
-    return 0
+    # Write last section if it had non-empty content
+    if [ -n "$section_header" ] && [ -n "$(echo "$section_content" | grep -v '^\s*$')" ]; then
+        echo "$section_header" >> "$temp_file"
+        trimmed=$(echo "$section_content" | sed '/^\s*$/d')
+        if [ -n "$trimmed" ]; then
+            echo "$trimmed" >> "$temp_file"
+        fi
+    fi
 }
 
 # Create release notes header

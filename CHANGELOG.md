@@ -21,19 +21,8 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [25.08.06.2] - 2025-08-06
 
-### Added
-
 ### Changed
-
-Tabellen-Ausgabe ist jetzt konfigurierbar
-
-### Fixed
-
-### Deprecated
-
-### Removed
-
-### Security
+- Tabellen-Ausgabe ist jetzt konfigurierbar
 
 ## [25.08.06.1] - 2025-08-06
 
@@ -48,18 +37,7 @@ Tabellen-Ausgabe ist jetzt konfigurierbar
 ## [25.08.05.1] - 2025-08-05
 
 ### Added
-
 - Neue Workflows um trivy und das Plugin auf die jeweils neueste Version zu updaten
-
-### Changed
-
-### Fixed
-
-### Deprecated
-
-### Removed
-
-### Security
 
 ## [25.08.05.0] - 2025-08-05
 
