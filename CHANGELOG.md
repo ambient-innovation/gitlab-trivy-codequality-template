@@ -19,6 +19,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ### Security
 
+## [25.08.06.3] - 2025-08-06
 ## [25.08.06.2] - 2025-08-06
 
 ### Changed
