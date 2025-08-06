@@ -11,6 +11,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ### Changed
 
+Table output can be configured now
+
 ### Fixed
 
 ### Deprecated

@@ -68,6 +68,7 @@ The template automatically downloads a `trivy.template.yaml` from the repository
 - `PLUGIN_SEVERITY_SECRET`: Severity for secrets
 - `PLUGIN_PKG_TYPES`: Package types to scan
 - `PLUGIN_DEBUG`: Enable debug mode
+- `PLUGIN_TABLE`: Show table output for results
 
 ### Example Configurations
 

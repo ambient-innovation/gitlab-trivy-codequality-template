@@ -11,6 +11,8 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ### Changed
 
+Tabellen-Ausgabe ist jetzt konfigurierbar
+
 ### Fixed
 
 ### Deprecated
