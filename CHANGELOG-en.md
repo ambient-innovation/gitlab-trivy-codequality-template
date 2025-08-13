@@ -8,14 +8,19 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ## [Unreleased]
 
 ### Added
+* In the before_script an update-checker for the template was added
+  It will print a message when the currently used template is outdated and show where to find the latest version.
 
 ### Changed
+* replace trivy.template.yaml with trivy.default.yaml and update related documentation
+* Update URLs in templates to use a TRIVY_TEMPLATE_VERSION variable
 
 ### Fixed
 
 ### Deprecated
 
 ### Removed
+* remove deprecated trivy.template.yaml file
 
 ### Security
 
@@ -70,7 +75,7 @@ trivy-scan:
   variables:
     IMAGE: "my-app:latest"
     DIRECTORY: "./"
-    # Template automatically loads trivy.template.yaml and merges with local trivy.yaml
+    # Template automatically loads trivy.default.yaml and merges with local trivy.yaml
 ```
 
 ### Migration from Deprecated Templates

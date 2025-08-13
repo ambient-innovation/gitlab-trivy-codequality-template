@@ -21,6 +21,7 @@
     PLUGIN_PKG_TYPES_MISCONFIG: "library, os"
     # Override scanner types for config-only scanning
     TRIVY_SCANNERS: "misconfig"
+    TRIVY_TEMPLATE_VERSION: "v25.08.05.0"
   before_script:
     # Show deprecation warning
     - echo "⚠️  WARNING: The .config_scanning template is DEPRECATED!"
@@ -33,4 +34,4 @@
 
 # Include the new unified template
 include:
-  - remote: "https://github.com/ambient-innovation/trivy-scanner-templates/releases/download/v25.08.05.0/trivy-scanning.template.yaml"
+  - remote: "https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/download/${TRIVY_TEMPLATE_VERSION}/trivy-scanning.template.yaml"

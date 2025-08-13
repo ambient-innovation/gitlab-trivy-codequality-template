@@ -158,7 +158,7 @@ cat >> "$OUTPUT_FILE" << EOF
 This release includes the following template files:
 
 - \`trivy-scanning.template.yaml\` (🔍 **Scanning workflow template**)
-- \`trivy.template.yaml\` (📋 **Configuration template**)
+- \`trivy.default.yaml\` (📋 **Configuration template**)
 
 ## 🚀 Usage
 
@@ -170,7 +170,7 @@ include:
 ## 🔗 Direct Download Links
 
 - [trivy-scanning.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/trivy-scanning.template.yaml) (🔍 **Recommended**)
-- [trivy.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/trivy.template.yaml) (📋 **Configuration**)
+- [trivy.default.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/trivy.default.yaml) (📋 **Configuration**)
 - [config-checks.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/config-checks.template.yaml) (⚠️ **Deprecated**)
 - [license-checks.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/license-checks.template.yaml) (⚠️ **Deprecated**)
 - [security-checks.template.yaml](https://github.com/$REPOSITORY/releases/download/v$VERSION/security-checks.template.yaml) (⚠️ **Deprecated**)
