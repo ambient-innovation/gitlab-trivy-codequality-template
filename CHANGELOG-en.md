@@ -7,17 +7,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ## [Unreleased]
 
-### Added
-
 ### Changed
-
-### Fixed
-
-### Deprecated
-
-### Removed
-
-### Security
+- Updated Trivy GitLab CodeQuality plugin from v1.16.0 to v1.17.0
 
 ## [25.08.12.0] - 2025-08-12
 ### Changed
