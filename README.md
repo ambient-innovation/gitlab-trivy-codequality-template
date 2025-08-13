@@ -58,7 +58,7 @@ Das Haupttemplate `trivy-scanning.template.yaml` unterstützt folgende Variablen
 - `LOCAL_TRIVY_CONFIG`: Pfad zur lokalen Trivy-Konfiguration (Standard: "trivy.yaml")
 - `MERGED_TRIVY_CONFIG`: Pfad zur zusammengeführten Konfigurationsdatei
 
-Das Template lädt automatisch eine `trivy.template.yaml` vom Repository herunter und kombiniert sie mit einer lokalen `trivy.yaml` falls vorhanden. Die lokale Konfiguration überschreibt dabei die Template-Einstellungen.
+Das Template lädt automatisch eine `trivy.default.yaml` vom Repository herunter und kombiniert sie mit einer lokalen `trivy.yaml` falls vorhanden. Die lokale Konfiguration überschreibt dabei die Template-Einstellungen.
 
 #### Plugin-Optionen
 - `PLUGIN_SEVERITY`: Severity-Level (z.B. "HIGH,CRITICAL")
@@ -74,8 +74,8 @@ Das Template lädt automatisch eine `trivy.template.yaml` vom Repository herunte
 
 #### Mit eigener Trivy-Konfiguration (🎯 Empfohlen)
 ```yaml
-# 1. Lade die trivy.template.yaml herunter (einmalig):
-# curl -o trivy.yaml https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/download/v25.08.05.0/trivy.template.yaml
+# 1. Lade die trivy.default.yaml herunter (einmalig):
+# curl -o trivy.yaml https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/download/v25.08.05.0/trivy.default.yaml
 
 # 2. Passe trivy.yaml nach deinen Bedürfnissen an
 
@@ -171,7 +171,7 @@ Dieses Projekt verwendet Calendar Versioning (CalVer) im Format `YY.MM.DD.MICRO`
 
 **Wichtig**: Jedes Release stellt sicher, dass alle Template-Dateien konsistent sind:
 
-- Das `trivy-scanning.template.yaml` eines Releases referenziert **immer** die `trivy.template.yaml` aus **demselben Release**
+- Das `trivy-scanning.template.yaml` eines Releases referenziert **immer** die `trivy.default.yaml` aus **demselben Release**
 - Keine Abhängigkeiten zu `main` Branch Dateien in Released Templates
 - Garantierte Kompatibilität zwischen Template und Konfigurationsdateien
 

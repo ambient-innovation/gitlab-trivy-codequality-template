@@ -7,8 +7,23 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [Unreleased]
 
+### Added
+- Im before_script wurde ein update-check für das template hinzugefügt
+  Der gibt eine Nachricht aus wenn das aktuell genutzte Template veraltet ist und zeigt an wo die neueste Verison zu finden ist.
+
 ### Changed
+- trivy.template.yaml durch trivy.default.yaml ersetzen und Dokumentation anpassen
+- URLs in den Templates wurden angepasst um eine TRIVY_TEMPLATE_VERSION Variable statt einer fixen Versionsnummer zu benutzen
 - Updated Trivy GitLab CodeQuality plugin from v1.16.0 to v1.17.0
+
+### Fixed
+
+### Deprecated
+
+### Removed
+- veraltete trivy.template.yaml Datei wurde entfernt
+
+### Security
 
 ## [25.08.12.0] - 2025-08-12
 ### Changed
@@ -70,7 +85,7 @@ trivy-scan:
   variables:
     IMAGE: "my-app:latest"
     DIRECTORY: "./"
-    # Template lädt automatisch trivy.template.yaml und merged mit lokaler trivy.yaml
+    # Template lädt automatisch trivy.default.yaml und merged mit lokaler trivy.yaml
 ```
 
 ### Migration von deprecated Templates

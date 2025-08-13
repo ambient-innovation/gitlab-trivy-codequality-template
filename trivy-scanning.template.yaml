@@ -17,7 +17,8 @@
     # Trivy configuration merging options
     TRIVY_CONFIG_MERGE: "true"  # Set to "false" to disable config merging
     # NOTE: This URL must use an explicit release version, not 'latest'
-    TRIVY_TEMPLATE_CONFIG_URL: "https://github.com/ambient-innovation/trivy-scanner-templates/releases/download/v25.08.05.0/trivy.template.yaml"
+    TRIVY_TEMPLATE_VERSION: "v25.08.05.0"
+    TRIVY_TEMPLATE_CONFIG_URL: "https://github.com/ambient-innovation/trivy-scanner-templates/releases/download/${TRIVY_TEMPLATE_VERSION}/trivy.default.yaml"
     LOCAL_TRIVY_CONFIG: "trivy.yaml"  # Path to local trivy config (optional)
     MERGED_TRIVY_CONFIG: "${TRIVY_CACHE_DIR}trivy-merged.yaml"
     # Plugin options (optional)
@@ -50,7 +51,7 @@
         
         # Download template config from repository
         echo "📥 Downloading template configuration from: ${TRIVY_TEMPLATE_CONFIG_URL}"
-        curl -fsSL "${TRIVY_TEMPLATE_CONFIG_URL}" -o "${TRIVY_CACHE_DIR}trivy.template.yaml"
+        curl -fsSL "${TRIVY_TEMPLATE_CONFIG_URL}" -o "${TRIVY_CACHE_DIR}trivy.default.yaml"
         
         # Check if local config exists
         if [ -f "${LOCAL_TRIVY_CONFIG}" ]; then
@@ -59,7 +60,7 @@
           
           # Merge configs: template as base, local config overrides
           yq eval-all '. as $item ireduce ({}; . *d+ $item)' \
-            "${TRIVY_CACHE_DIR}trivy.template.yaml" \
+            "${TRIVY_CACHE_DIR}trivy.default.yaml" \
             "${LOCAL_TRIVY_CONFIG}" > "${MERGED_TRIVY_CONFIG}"
           
           echo "✅ Merged configuration saved to: ${MERGED_TRIVY_CONFIG}"
@@ -67,7 +68,7 @@
           head -20 "${MERGED_TRIVY_CONFIG}"
         else
           echo "ℹ️  No local trivy config found (${LOCAL_TRIVY_CONFIG}), using template config only"
-          cp "${TRIVY_CACHE_DIR}trivy.template.yaml" "${MERGED_TRIVY_CONFIG}"
+          cp "${TRIVY_CACHE_DIR}trivy.default.yaml" "${MERGED_TRIVY_CONFIG}"
         fi
         
         echo "🎯 Using Trivy config: ${MERGED_TRIVY_CONFIG}"
@@ -86,6 +87,23 @@
     
     # Verify plugin installation
     - trivy plugin list
+    
+    # Check for the latest version of the template
+    - |
+      echo "🔍 Checking for the latest version of the template..."
+      LATEST_RELEASE_URL="https://api.github.com/repos/ambient-innovation/gitlab-trivy-codequality-template/releases/latest"
+      LATEST_VERSION=$(curl -s "$LATEST_RELEASE_URL" | jq -r .tag_name)
+
+      if [ -z "$LATEST_VERSION" ] || [ "$LATEST_VERSION" = "null" ]; then
+        echo "❌ Failed to fetch the latest template version. Skipping version check."
+      else
+        if [ "$LATEST_VERSION" != "$TRIVY_TEMPLATE_VERSION" ]; then
+          echo "⚠️  A newer version of the template is available: $LATEST_VERSION"
+          echo "🔗 Please update to the latest version: https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/latest"
+        else
+          echo "✅ You are using the latest version of the template."
+        fi
+      fi
   allow_failure: true
   script:
     # Determine config argument for trivy commands

@@ -7,7 +7,7 @@ on:
       - master
     paths:
       - 'trivy-scanning.template.yaml'
-      - 'trivy.template.yaml'
+      - 'trivy.default.yaml'
       - 'config-checks.template.yaml'
       - 'license-checks.template.yaml'
       - 'security-checks.template.yaml'
@@ -124,7 +124,7 @@ jobs:
             echo "This release includes the following template files:" >> release_notes.md
             echo "" >> release_notes.md
             echo "- \`trivy-scanning.template.yaml\` (🔍 **Scanning workflow template**)" >> release_notes.md
-            echo "- \`trivy.template.yaml\` (📋 **Configuration template**)" >> release_notes.md
+            echo "- \`trivy.default.yaml\` (📋 **Configuration template**)" >> release_notes.md
             echo "" >> release_notes.md
             echo "## 🚀 Usage" >> release_notes.md
             echo "" >> release_notes.md
@@ -146,18 +146,13 @@ jobs:
           # Update outdated version numbers in template files to the new release version
           for file in trivy-scanning.template.yaml config-checks.template.yaml license-checks.template.yaml security-checks.template.yaml; do
             if [ -f "$file" ]; then
-              # Replace any previous version number in the release asset URL with the new version
-              sed -i "s|https://github.com/.*/releases/download/v[0-9.]\+/\(.*\.template\.yaml\)|https://github.com/${{ github.repository }}/releases/download/v${VERSION}/\1|g" "$file"
-              # Also handle URLs pointing to 'latest'
-              sed -i "s|https://github.com/.*/releases/latest/download/\(.*\.template\.yaml\)|https://github.com/${{ github.repository }}/releases/download/v${VERSION}/\1|g" "$file"
-              # Also handle URLs pointing to main branch
-              sed -i "s|https://raw.githubusercontent.com/.*/main/\(.*\.template\.yaml\)|https://github.com/${{ github.repository }}/releases/download/v${VERSION}/\1|g" "$file"
+              # Update TRIVY_TEMPLATE_VERSION variable
+              sed -i "s|TRIVY_TEMPLATE_VERSION: \"v[0-9.]*\"|TRIVY_TEMPLATE_VERSION: \"v${VERSION}\"|g" "$file"
             fi
           done
-          
-          echo "✅ Release template prepared with version-specific URL"
-          echo "📋 Template URL updated to: https://github.com/${{ github.repository }}/releases/download/v${VERSION}/trivy.template.yaml"
-          
+
+          echo "✅ Release templates prepared with updated TRIVY_TEMPLATE_VERSION and version-specific URLs."
+          echo "📋 New version is v${VERSION}"
 
       - name: Update README files with release URLs
         if: steps.check_release.outputs.create_release == 'true'
@@ -170,7 +165,7 @@ jobs:
           # Update URLs in README.md
           if [ -f "README.md" ]; then
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy-scanning.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy-scanning.template.yaml|g" README.md
-            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy.template.yaml|g" README.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy.default.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy.default.yaml|g" README.md
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/config-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/config-checks.template.yaml|g" README.md
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/license-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/license-checks.template.yaml|g" README.md
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/security-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/security-checks.template.yaml|g" README.md
@@ -180,7 +175,7 @@ jobs:
           # Update URLs in README-en.md
           if [ -f "README-en.md" ]; then
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy-scanning.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy-scanning.template.yaml|g" README-en.md
-            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy.template.yaml|g" README-en.md
+            sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/trivy.default.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/trivy.default.yaml|g" README-en.md
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/config-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/config-checks.template.yaml|g" README-en.md
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/license-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/license-checks.template.yaml|g" README-en.md
             sed -i "s|https://github.com/[A-Za-z0-9._-]\+/[A-Za-z0-9._-]\+/releases/download/v[0-9.]\+/security-checks.template.yaml|https://github.com/${REPO}/releases/download/v${VERSION}/security-checks.template.yaml|g" README-en.md
@@ -200,7 +195,7 @@ jobs:
           prerelease: false
           files: |
             trivy-scanning.template.yaml
-            trivy.template.yaml
+            trivy.default.yaml
             config-checks.template.yaml
             license-checks.template.yaml
             security-checks.template.yaml
@@ -215,7 +210,7 @@ jobs:
           echo ""
           echo "🔗 Template URLs:"
           echo "   ✅ trivy-scanning.template.yaml (RECOMMENDED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/trivy-scanning.template.yaml"
-          echo "   📋 trivy.template.yaml (CONFIG): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/trivy.template.yaml"
+          echo "   📋 trivy.default.yaml (CONFIG): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/trivy.default.yaml"
           echo "   ⚠️  config-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/config-checks.template.yaml"
           echo "   ⚠️  license-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/license-checks.template.yaml"
           echo "   ⚠️  security-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/security-checks.template.yaml"
