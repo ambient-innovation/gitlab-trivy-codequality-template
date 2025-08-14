@@ -12,6 +12,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 ### Changed
 
 ### Fixed
+- Passt die Repository-URL an einigen Stellen an die noch auf den alten Namen verweisen und nicht mehr erreicht werden konnten.
 
 ### Deprecated
 
