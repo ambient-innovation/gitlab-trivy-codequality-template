@@ -12,13 +12,16 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Changed
 
 ### Fixed
-- There were some references to the old repository name still in the config files that cannot be reached anymore
 
 ### Deprecated
 
 ### Removed
 
 ### Security
+
+## [25.08.14.0] - 2025-08-14
+### Fixed
+- There were some references to the old repository name still in the config files that cannot be reached anymore
 
 ## [25.08.13.0] - 2025-08-13
 ### Added

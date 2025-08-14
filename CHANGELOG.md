@@ -12,13 +12,16 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 ### Changed
 
 ### Fixed
-- Passt die Repository-URL an einigen Stellen an die noch auf den alten Namen verweisen und nicht mehr erreicht werden konnten.
 
 ### Deprecated
 
 ### Removed
 
 ### Security
+
+## [25.08.14.0] - 2025-08-14
+### Fixed
+- Passt die Repository-URL an einigen Stellen an die noch auf den alten Namen verweisen und nicht mehr erreicht werden konnten.
 
 ## [25.08.13.0] - 2025-08-13
 ### Added
