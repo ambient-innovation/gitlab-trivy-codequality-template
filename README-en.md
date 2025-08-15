@@ -21,6 +21,13 @@ Please migrate to the new unified `trivy-scanning.template.yaml`, which provides
 
 The deprecated templates will show migration instructions when used.
 
+#### Ignore-File
+
+In order to use a trivyignore file in YAML-format, the variable `TRIVY_IGNOREFILE must be set and must contain
+the path to the ignorefile relative from the repository-root, because trivy does not load YAML-ignorefiles automatically.  
+Paths inside the YAML-ignore-file are interpreted relative to the path in the `DIRECTORY` variable, you might need to adjust them.  
+Compare the paths in the error-table to the ones in the ignorefile.
+
 ## 🚀 Usage
 
 ### GitLab CI/CD Integration
