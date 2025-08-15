@@ -244,8 +244,8 @@ jobs:
             --body "This pull request updates the Trivy GitLab CodeQuality plugin version from **${CURRENT}** to **${LATEST}**.
 
               ### Changes:
-              - Updated \`trivy-scanning.template.yaml\` with the new plugin version.
-              - Updated \`CHANGELOG.md\` and \`CHANGELOG-en.md\` with the version change.
+              - Updated `trivy-scanning.template.yaml` with the new plugin version.
+              - Updated `CHANGELOG.md` and `CHANGELOG-en.md` with the version change.
 
               Please review and merge this pull request to apply the update." \
             --base main \
