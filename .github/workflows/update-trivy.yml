@@ -205,7 +205,7 @@ jobs:
         if: steps.check_update.outputs.update_needed == 'true'
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          printf '%s' "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
           
