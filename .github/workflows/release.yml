@@ -209,6 +209,14 @@ jobs:
           echo "   ⚠️  license-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/license-checks.template.yaml"
           echo "   ⚠️  security-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/security-checks.template.yaml"
           
+      - name: Configure SSH for deploy key
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+          
       - name: Update changelog for next development
         if: steps.check_release.outputs.create_release == 'true'
         run: |
@@ -230,6 +238,7 @@ jobs:
             git add CHANGELOG.md CHANGELOG-en.md
             git commit -m "chore: update changelogs for v$VERSION release [skip ci]"
             
-            git push origin main || git push origin master || echo "⚠️ Could not push changelog update"
+            # Push changes using SSH
+            GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main || GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin master || echo "⚠️ Could not push changelog update"
             echo "✅ Changelogs updated and pushed to repository"
           fi

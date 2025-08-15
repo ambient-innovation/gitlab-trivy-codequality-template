@@ -198,6 +198,14 @@ jobs:
           
           echo "✅ Updated CHANGELOG-en.md with Trivy plugin version update"
           
+      - name: Configure SSH for deploy key
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+          
       - name: Commit changes
         if: steps.check_update.outputs.update_needed == 'true'
         run: |
@@ -218,8 +226,8 @@ jobs:
           Updated changelog with version change
           This will trigger a new release automatically"
           
-          # Push changes
-          git push origin main
+          # Push changes using SSH
+          GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main
           
           echo "✅ Changes committed and pushed to main branch"
           echo "🚀 This will automatically trigger a new release!"
