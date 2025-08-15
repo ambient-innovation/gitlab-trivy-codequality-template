@@ -11,12 +11,6 @@ on:
       - 'config-checks.template.yaml'
       - 'license-checks.template.yaml'
       - 'security-checks.template.yaml'
-      - 'CHANGELOG.md'
-      - 'CHANGELOG-en.md'
-      - 'README.md'
-      - 'README-en.md'
-      - 'CONTRIBUTING.md'
-      - 'CONTRIBUTING-en.md'
   workflow_dispatch:
     inputs:
       force_release:
