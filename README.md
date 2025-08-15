@@ -9,7 +9,7 @@ Dieses Repository enthält wiederverwendbare GitLab CI/CD-Templates für Trivy-S
 - **`license-checks.template.yaml`** - ⚠️ **DEPRECATED** - Nutze stattdessen `trivy-scanning.template.yaml`
 - **`security-checks.template.yaml`** - ⚠️ **DEPRECATED** - Nutze stattdessen `trivy-scanning.template.yaml`
 
-### ⚠️ Migration Notice
+### ⚠️ Migrationshinweise
 
 **WICHTIG**: Die individuellen Template-Dateien (`config-checks`, `license-checks`, `security-checks`) sind jetzt **VERALTET**.
 
@@ -20,6 +20,14 @@ Bitte migriere zum neuen unified `trivy-scanning.template.yaml`, welches bietet:
 - Zukunftssicheres Design
 
 Die veralteten Templates zeigen Migrationsanleitungen bei der Verwendung an.
+
+#### Ignore-Datei
+
+Um eine trivyignore Datei im YAML-Format nutzen zu können, muss die Variable `TRIVY_IGNOREFILE` gesetzt sein 
+und den korrekten Pfad relativ zum Repository-Root enthalten, da trivy YAML-Ignorefiles nicht automatisch lädt.  
+Pfade im YAML-Ignorefile werden von trivy relativ zum Verzeichnis aus der `DIRECTORY` Variable interpretiert, 
+eventuell müssen die Pfade angepasst werden.  
+Vergleiche dazu die Pfade in der Fehlertabelle mit denen im Ignore-File.
 
 ## 🚀 Verwendung
 
