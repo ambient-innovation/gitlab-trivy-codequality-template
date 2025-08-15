@@ -27,7 +27,7 @@ Um eine trivyignore Datei im YAML-Format nutzen zu können, muss die Variable `T
 und den korrekten Pfad relativ zum Repository-Root enthalten, da trivy YAML-Ignorefiles nicht automatisch lädt.  
 Pfade im YAML-Ignorefile werden von trivy relativ zum Verzeichnis aus der `DIRECTORY` Variable interpretiert, 
 eventuell müssen die Pfade angepasst werden.  
-Vergleiche dazu die Pfade in der Fehlertabellle mit denen im Ignore-File.
+Vergleiche dazu die Pfade in der Fehlertabelle mit denen im Ignore-File.
 
 ## 🚀 Verwendung
 
