@@ -198,14 +198,6 @@ jobs:
           
           echo "✅ Updated CHANGELOG-en.md with Trivy plugin version update"
           
-      - name: Configure SSH for deploy key
-        if: steps.check_update.outputs.update_needed == 'true'
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-          
       - name: Commit changes
         if: steps.check_update.outputs.update_needed == 'true'
         run: |
@@ -218,20 +210,49 @@ jobs:
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           
+          # Create a new branch for the update
+          BRANCH_NAME="update-trivy-plugin-${LATEST}"
+          git checkout -b "$BRANCH_NAME"
+          
           # Add and commit changes
           git add trivy-scanning.template.yaml CHANGELOG.md CHANGELOG-en.md
           git commit -m "chore: update Trivy plugin from ${CURRENT} to ${LATEST}
 
           Updated Trivy GitLab CodeQuality plugin version in template
-          Updated changelog with version change
-          This will trigger a new release automatically"
+          Updated changelog with version change"
           
-          # Push changes using SSH
-          GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main
+          echo "✅ Changes committed to branch $BRANCH_NAME"
+
+      - name: Push changes
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          BRANCH_NAME="update-trivy-plugin-${{ steps.plugin_version.outputs.latest_version }}"
+          echo "🚀 Pushing changes to branch $BRANCH_NAME..."
+          git push origin "$BRANCH_NAME"
+          echo "✅ Changes pushed to branch $BRANCH_NAME"
+
+      - name: Create pull request
+        if: steps.check_update.outputs.update_needed == 'true'
+        run: |
+          CURRENT="${{ steps.current_version.outputs.current_version }}"
+          LATEST="${{ steps.plugin_version.outputs.latest_version }}"
+          BRANCH_NAME="update-trivy-plugin-${LATEST}"
           
-          echo "✅ Changes committed and pushed to main branch"
-          echo "🚀 This will automatically trigger a new release!"
-          
+          echo "📄 Creating pull request..."
+          gh pr create \
+            --title "chore: update Trivy plugin to ${LATEST}" \
+            --body "This pull request updates the Trivy GitLab CodeQuality plugin version from **${CURRENT}** to **${LATEST}**.
+
+              ### Changes:
+              - Updated \`trivy-scanning.template.yaml\` with the new plugin version.
+              - Updated \`CHANGELOG.md\` and \`CHANGELOG-en.md\` with the version change.
+
+              Please review and merge this pull request to apply the update." \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --label update,automation
+          echo "✅ Pull request created"
+
       - name: Output summary
         if: steps.check_update.outputs.update_needed == 'true'
         run: |
