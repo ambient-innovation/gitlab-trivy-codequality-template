@@ -10,7 +10,6 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Added
 
 ### Changed
-- Version numbers in README and YAML-files are now updated in git as well as the release assets
 
 ### Fixed
 
@@ -19,6 +18,10 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Removed
 
 ### Security
+
+## [25.08.19.0] - 2025-08-19
+### Changed
+- Version numbers in README and YAML-files are now updated in git as well as the release assets
 
 ## [25.08.15.0] - 2025-08-15
 ### Changed
