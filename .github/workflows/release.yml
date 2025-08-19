@@ -203,7 +203,7 @@ jobs:
             git commit -m "chore: update version number in README and yaml for v$VERSION release [skip ci]"
 
             # Push changes using SSH
-            GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main || GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin master || echo "⚠️ Could not push changelog update"
+            GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main || GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin master || echo "⚠️ Could not push README and YAML updates"
             echo "✅ README and YAML files updated and pushed to repository"
           fi
 
