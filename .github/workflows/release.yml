@@ -25,13 +25,13 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          
+
       - name: Generate CalVer version
         id: version
         run: |
@@ -39,28 +39,28 @@ jobs:
           YEAR=$(date +%y)
           MONTH=$(date +%m)
           DAY=$(date +%d)
-          
+
           # Get the latest tag for today to determine micro version
           TODAY_TAG_PREFIX="v${YEAR}.${MONTH}.${DAY}"
           LATEST_TODAY_TAG=$(git tag -l "${TODAY_TAG_PREFIX}.*" | sort -V | tail -n 1)
-          
+
           if [ -z "$LATEST_TODAY_TAG" ]; then
             MICRO=0
           else
             MICRO=$(echo "$LATEST_TODAY_TAG" | cut -d'.' -f4)
             MICRO=$((MICRO + 1))
           fi
-          
+
           VERSION="${YEAR}.${MONTH}.${DAY}.${MICRO}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "Generated version: ${VERSION}"
-          
+
       - name: Check if release needed
         id: check_release
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           FORCE_RELEASE="${{ github.event.inputs.force_release }}"
-          
+
           # Check if tag already exists
           if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
             echo "Tag v${VERSION} already exists"
@@ -75,32 +75,32 @@ jobs:
             echo "No release needed"
             echo "create_release=false" >> $GITHUB_OUTPUT
           fi
-          
+
       - name: Create release notes
         id: release_notes
         if: steps.check_release.outputs.create_release == 'true'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          
+
           echo "📝 Generating release notes from CHANGELOG.md..."
-          
+
           # Make script executable and run it
           chmod +x scripts/extract-release-notes.sh
-          
+
           # Extract release notes from changelog
           ./scripts/extract-release-notes.sh "$VERSION" "${{ github.repository }}"
-          
+
           # If release notes extraction failed, create basic notes
           if [ ! -f "release_notes.md" ] || [ ! -s "release_notes.md" ]; then
             echo "⚠️ Could not extract from CHANGELOG.md, creating basic release notes..."
-            
+
             # Get the latest tag for changelog generation
             LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-            
+
             echo "# Release v$VERSION" > release_notes.md
             echo "" >> release_notes.md
             echo "## Changes" >> release_notes.md
-            
+
             if [ -n "$LATEST_TAG" ]; then
               echo "" >> release_notes.md
               echo "Changes since $LATEST_TAG:" >> release_notes.md
@@ -110,7 +110,7 @@ jobs:
               echo "" >> release_notes.md
               echo "- Initial release of Trivy scanning templates" >> release_notes.md
             fi
-            
+
             # Add template files section
             echo "" >> release_notes.md
             echo "## 📦 Template Files" >> release_notes.md
@@ -127,16 +127,16 @@ jobs:
             echo "  - remote: 'https://github.com/${{ github.repository }}/releases/download/v$VERSION/trivy-scanning.template.yaml'" >> release_notes.md
             echo "\`\`\`" >> release_notes.md
           fi
-          
+
           echo "✅ Release notes prepared"
-          
+
       - name: Prepare release templates
         if: steps.check_release.outputs.create_release == 'true'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          
+
           echo "🔧 Preparing templates for release v${VERSION}..."
-          
+
           # Update outdated version numbers in template files to the new release version
           for file in trivy-scanning.template.yaml config-checks.template.yaml license-checks.template.yaml security-checks.template.yaml; do
             if [ -f "$file" ]; then
@@ -177,7 +177,36 @@ jobs:
           fi
 
           echo "📋 README files updated with release asset URLs"
-          
+
+      - name: Configure SSH for deploy key
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s' "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+
+      - name: Commit Updated README and yaml-files to git
+        if: steps.check_release.outputs.create_release == 'true'
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          REPO="${{ github.repository }}"
+          echo "🔀 Commit and Push updates for $REPO v$VERSION..."
+          # Commit the updated README and YAML files back to the repository
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+          if git diff --quiet README.md README-en.md trivy-scanning.template.yaml config-checks.template.yaml license-checks.template.yaml security-checks.template.yaml; then
+            echo "ℹ️ No changes to README or YAML files"
+          else
+            git add README.md README-en.md trivy-scanning.template.yaml config-checks.template.yaml license-checks.template.yaml security-checks.template.yaml
+            git commit -m "chore: update version number in README and yaml for v$VERSION release [skip ci]"
+
+            # Push changes using SSH
+            GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main || GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin master || echo "⚠️ Could not push changelog update"
+            echo "✅ README and YAML files updated and pushed to repository"
+          fi
+
       - name: Create GitHub Release
         if: steps.check_release.outputs.create_release == 'true'
         uses: softprops/action-gh-release@v2
@@ -195,7 +224,7 @@ jobs:
             security-checks.template.yaml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - name: Output release information
         if: steps.check_release.outputs.create_release == 'true'
         run: |
@@ -208,36 +237,28 @@ jobs:
           echo "   ⚠️  config-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/config-checks.template.yaml"
           echo "   ⚠️  license-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/license-checks.template.yaml"
           echo "   ⚠️  security-checks.template.yaml (DEPRECATED): https://github.com/${{ github.repository }}/releases/download/v${{ steps.version.outputs.version }}/security-checks.template.yaml"
-          
-      - name: Configure SSH for deploy key
-        if: steps.check_release.outputs.create_release == 'true'
-        run: |
-          mkdir -p ~/.ssh
-          printf '%s' "${{ secrets.ACTIONS_DEPLOY_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
-          
+
       - name: Update changelog for next development
         if: steps.check_release.outputs.create_release == 'true'
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          
+
           echo "📝 Updating changelogs for next development cycle..."
-          
+
           # Make script executable and run it
           chmod +x scripts/update-changelog.sh
           ./scripts/update-changelog.sh "$VERSION"
-          
+
           # Commit the updated changelogs back to the repository
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          
+
           if git diff --quiet CHANGELOG.md CHANGELOG-en.md; then
             echo "ℹ️ No changes to changelog files"
           else
             git add CHANGELOG.md CHANGELOG-en.md
             git commit -m "chore: update changelogs for v$VERSION release [skip ci]"
-            
+
             # Push changes using SSH
             GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin main || GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa" git push origin master || echo "⚠️ Could not push changelog update"
             echo "✅ Changelogs updated and pushed to repository"

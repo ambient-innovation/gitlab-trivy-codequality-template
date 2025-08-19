@@ -10,6 +10,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Added
 
 ### Changed
+- Version numbers in README and YAML-files are now updated in git as well as the release assets
 
 ### Fixed
 
