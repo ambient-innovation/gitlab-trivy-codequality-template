@@ -9,6 +9,8 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ### Changed
 - Updated Trivy scanner from v0.65.0 to v0.66.0
+- Added a fault-tolerant cleanup workflow step: on a failed run the workflow will attempt to delete the update branch `update-trivy-<version>` locally and on the remote. If no such branch exists, the step exits without error.
+
 
 ## [25.08.19.0] - 2025-08-19
 ### Changed
