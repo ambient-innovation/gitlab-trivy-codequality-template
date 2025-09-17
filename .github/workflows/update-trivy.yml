@@ -236,6 +236,8 @@ jobs:
 
       - name: Create pull request
         if: steps.check_update.outputs.update_needed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           CURRENT="${{ steps.current_version.outputs.current_version }}"
           LATEST="${{ steps.trivy_version.outputs.latest_version }}"
@@ -247,8 +249,8 @@ jobs:
             --body "This pull request updates the Trivy scanner version from **v${CURRENT}** to **v${LATEST}**.
 
               ### Changes:
-              - Updated `trivy-scanning.template.yaml` with the new Docker image version.
-              - Updated `CHANGELOG.md` and `CHANGELOG-en.md` with the version change.
+              - Updated \`trivy-scanning.template.yaml\` with the new Docker image version.
+              - Updated \`CHANGELOG.md\` and \`CHANGELOG-en.md\` with the version change.
 
               Please review and merge this pull request to apply the update." \
             --base main \
