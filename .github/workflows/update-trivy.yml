@@ -272,32 +272,40 @@ jobs:
             BRANCH_NAME="update-trivy-${LATEST}"
           else
             # Fallback: look for any local branch matching the update-trivy-* pattern
-            BRANCH_NAME=$(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null | grep '^update-trivy-' || true)
-            BRANCH_NAME=$(echo "$BRANCH_NAME" | head -n1 || true)
+            BRANCH_NAMES=$(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null | grep '^update-trivy-' || true)
           fi
 
-          if [ -z "$BRANCH_NAME" ]; then
-            echo "No update branch detected. Nothing to clean."
-            exit 0
-          fi
-
-          echo "Target branch to clean: $BRANCH_NAME"
-
-          # Delete local branch if it exists (tolerant)
-          if git show-ref --verify --quiet refs/heads/"$BRANCH_NAME"; then
-            git branch -D "$BRANCH_NAME" || true
-            echo "Deleted local branch $BRANCH_NAME"
+          if [ -n "${BRANCH_NAME}" ]; then
+            # Only one branch to clean (from latest version)
+            BRANCHES_TO_CLEAN="$BRANCH_NAME"
           else
-            echo "Local branch $BRANCH_NAME does not exist"
+            # Multiple or zero fallback branches
+            if [ -z "$BRANCH_NAMES" ]; then
+              echo "No update branch detected. Nothing to clean."
+              exit 0
+            fi
+            BRANCHES_TO_CLEAN="$BRANCH_NAMES"
           fi
 
-          # Delete remote branch if it exists (tolerant)
-          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
-            git push origin --delete "$BRANCH_NAME" || true
-            echo "Deleted remote branch origin/$BRANCH_NAME"
-          else
-            echo "Remote branch origin/$BRANCH_NAME does not exist"
-          fi
+          for BR in $BRANCHES_TO_CLEAN; do
+            echo "Target branch to clean: $BR"
+
+            # Delete local branch if it exists (tolerant)
+            if git show-ref --verify --quiet refs/heads/"$BR"; then
+              git branch -D "$BR" || true
+              echo "Deleted local branch $BR"
+            else
+              echo "Local branch $BR does not exist"
+            fi
+
+            # Delete remote branch if it exists (tolerant)
+            if git ls-remote --exit-code --heads origin "$BR" >/dev/null 2>&1; then
+              git push origin --delete "$BR" || true
+              echo "Deleted remote branch origin/$BR"
+            else
+              echo "Remote branch origin/$BR does not exist"
+            fi
+          done
 
       - name: Output summary
         if: steps.check_update.outputs.update_needed == 'true'
