@@ -256,6 +256,52 @@ jobs:
             --label update,automation
           echo "✅ Pull request created"
           
+      - name: Cleanup branch on failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🧹 Cleanup: attempt to delete update branch if present"
+          set -u
+
+          # Configure authentication for remote operations (safe, non-fatal)
+          git remote set-url origin "https://${GH_TOKEN}@github.com/${{ github.repository }}" || true
+
+          # Try to compute expected branch name from the latest version output (if available)
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          BRANCH_NAME=""
+
+          if [ -n "${LATEST}" ]; then
+            BRANCH_NAME="update-trivy-${LATEST}"
+          else
+            # Fallback: look for any local branch matching the update-trivy-* pattern
+            BRANCH_NAME=$(git for-each-ref --format='%(refname:short)' refs/heads/ 2>/dev/null | grep '^update-trivy-' || true)
+            BRANCH_NAME=$(echo "$BRANCH_NAME" | head -n1 || true)
+          fi
+
+          if [ -z "$BRANCH_NAME" ]; then
+            echo "No update branch detected. Nothing to clean."
+            exit 0
+          fi
+
+          echo "Target branch to clean: $BRANCH_NAME"
+
+          # Delete local branch if it exists (tolerant)
+          if git show-ref --verify --quiet refs/heads/"$BRANCH_NAME"; then
+            git branch -D "$BRANCH_NAME" || git branch -d "$BRANCH_NAME" || true
+            echo "Deleted local branch $BRANCH_NAME"
+          else
+            echo "Local branch $BRANCH_NAME does not exist"
+          fi
+
+          # Delete remote branch if it exists (tolerant)
+          if git ls-remote --exit-code --heads origin "$BRANCH_NAME" >/dev/null 2>&1; then
+            git push origin --delete "$BRANCH_NAME" || true
+            echo "Deleted remote branch origin/$BRANCH_NAME"
+          else
+            echo "Remote branch origin/$BRANCH_NAME does not exist"
+          fi
+
       - name: Output summary
         if: steps.check_update.outputs.update_needed == 'true'
         run: |
