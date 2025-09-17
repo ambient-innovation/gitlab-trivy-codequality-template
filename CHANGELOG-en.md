@@ -10,6 +10,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Added
 
 ### Changed
+- Added a fault-tolerant cleanup workflow step: on a failed run the workflow will attempt to delete the update branch `update-trivy-<version>` locally and on the remote. If no such branch exists, the step exits without error.
 
 ### Fixed
 

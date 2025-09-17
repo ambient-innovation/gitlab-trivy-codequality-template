@@ -264,9 +264,6 @@ jobs:
           echo "🧹 Cleanup: attempt to delete update branch if present"
           set -u
 
-          # Configure authentication for remote operations (safe, non-fatal)
-          git remote set-url origin "https://${GH_TOKEN}@github.com/${{ github.repository }}" || true
-
           # Try to compute expected branch name from the latest version output (if available)
           LATEST="${{ steps.trivy_version.outputs.latest_version }}"
           BRANCH_NAME=""
@@ -288,7 +285,7 @@ jobs:
 
           # Delete local branch if it exists (tolerant)
           if git show-ref --verify --quiet refs/heads/"$BRANCH_NAME"; then
-            git branch -D "$BRANCH_NAME" || git branch -d "$BRANCH_NAME" || true
+            git branch -D "$BRANCH_NAME" || true
             echo "Deleted local branch $BRANCH_NAME"
           else
             echo "Local branch $BRANCH_NAME does not exist"

@@ -10,6 +10,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 ### Added
 
 ### Changed
+- Neuer Workflow-Schritt zur Bereinigung: Bei einem fehlgeschlagenen Lauf versucht der Workflow, den Update-Branch `update-trivy-<version>` lokal und remote zu löschen, falls vorhanden. Der Schritt ist fehlertolerant und macht nichts, wenn kein Branch existiert.
 
 ### Fixed
 
