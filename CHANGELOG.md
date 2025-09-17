@@ -7,18 +7,9 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [Unreleased]
 
-### Added
-
 ### Changed
+- Updated Trivy scanner from v0.65.0 to v0.66.0
 - Neuer Workflow-Schritt zur Bereinigung: Bei einem fehlgeschlagenen Lauf versucht der Workflow, den Update-Branch `update-trivy-<version>` lokal und remote zu löschen, falls vorhanden. Der Schritt ist fehlertolerant und macht nichts, wenn kein Branch existiert.
-
-### Fixed
-
-### Deprecated
-
-### Removed
-
-### Security
 
 ## [25.08.19.0] - 2025-08-19
 ### Changed
