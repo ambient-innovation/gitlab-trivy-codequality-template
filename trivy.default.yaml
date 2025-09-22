@@ -16,19 +16,18 @@ cache:
 
 exit-code: 1
 
-# Default scanners to run (we scan images by default and thus don't include the misconfig scanner
+# Default scanners to run (images + license/secret; misconfig runs in dedicated job)
 scan:
   scanners:
     - vuln
     - secret
     - license
-    - misconfig
 
-vulnerabilities:
+vulnerability:
   ignore-unfixed: true
 
 license:
-    confidencelevel: "0.9"
+    confidencelevel: 0.9
     forbidden:
         - AGPL
         - AGPL-1.0
