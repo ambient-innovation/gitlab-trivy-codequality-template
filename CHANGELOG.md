@@ -19,6 +19,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ### Security
 
+## [25.10.10.0] - 2025-10-10
 ## [25.09.17.0] - 2025-09-17
 ### Changed
 - Updated Trivy scanner from v0.65.0 to v0.66.0
