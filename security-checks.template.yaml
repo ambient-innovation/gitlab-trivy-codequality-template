@@ -25,7 +25,7 @@
     PLUGIN_PKG_TYPES_VULN: "os,library"
     # Override scanner types for security scanning
     TRIVY_SCANNERS: "vuln,misconfig"
-    TRIVY_TEMPLATE_VERSION: "v25.09.17.0"
+    TRIVY_TEMPLATE_VERSION: "v25.10.10.0"
   before_script:
     # Show deprecation warning
     - echo "⚠️  WARNING: The .container_scanning template is DEPRECATED!"
