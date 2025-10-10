@@ -27,7 +27,7 @@ vulnerability:
   ignore-unfixed: true
 
 license:
-    confidencelevel: 0.9
+    confidenceLevel: 0.9
     forbidden:
         - AGPL
         - AGPL-1.0
