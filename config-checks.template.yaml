@@ -21,7 +21,7 @@
     PLUGIN_PKG_TYPES_MISCONFIG: "library, os"
     # Override scanner types for config-only scanning
     TRIVY_SCANNERS: "misconfig"
-    TRIVY_TEMPLATE_VERSION: "v25.10.10.1"
+    TRIVY_TEMPLATE_VERSION: "v25.10.13.0"
   before_script:
     # Show deprecation warning
     - echo "⚠️  WARNING: The .config_scanning template is DEPRECATED!"

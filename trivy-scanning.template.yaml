@@ -17,7 +17,7 @@
     # Trivy configuration merging options
     TRIVY_CONFIG_MERGE: "true"  # Set to "false" to disable config merging
     # NOTE: This URL must use an explicit release version, not 'latest'
-    TRIVY_TEMPLATE_VERSION: "v25.10.10.1"
+    TRIVY_TEMPLATE_VERSION: "v25.10.13.0"
     TRIVY_TEMPLATE_CONFIG_URL: "https://github.com/ambient-innovation/gitlab-trivy-codequality-template/releases/download/${TRIVY_TEMPLATE_VERSION}/trivy.default.yaml"
     LOCAL_TRIVY_CONFIG: "trivy.yaml"  # Path to local trivy config (optional)
     MERGED_TRIVY_CONFIG: "${TRIVY_CACHE_DIR}trivy-merged.yaml"
