@@ -7,6 +7,19 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security
+
+## [25.12.09.0] - 2025-12-09
 ### Changed
 - Updated Trivy scanner from v0.67.2 to v0.68.1
 
