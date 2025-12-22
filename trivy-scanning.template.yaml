@@ -1,6 +1,6 @@
 .trivy_scanning:
   image: 
-    name: ghcr.io/aquasecurity/trivy:0.68.1
+    name: ghcr.io/aquasecurity/trivy:0.68.2
     entrypoint: [""]
   tags:
     - small-runner
