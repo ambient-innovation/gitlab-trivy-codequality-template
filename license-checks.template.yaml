@@ -22,7 +22,7 @@
     PLUGIN_PKG_TYPES_LICENSE: "library,os"
     # Override scanner types for license-only scanning
     TRIVY_SCANNERS: "license"
-    TRIVY_TEMPLATE_VERSION: "v26.02.03.0"
+    TRIVY_TEMPLATE_VERSION: "v26.02.03.1"
   before_script:
     # Show deprecation warning
     - echo "⚠️  WARNING: The .license_scanning template is DEPRECATED!"
