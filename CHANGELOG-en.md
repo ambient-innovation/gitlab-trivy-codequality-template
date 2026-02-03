@@ -10,7 +10,6 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Added
 
 ### Changed
-- Increased default timeout to 15 mins
 
 ### Fixed
 
@@ -19,6 +18,10 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 ### Removed
 
 ### Security
+
+## [26.02.03.1] - 2026-02-03
+### Changed
+- Increased default timeout to 15 mins
 
 ## [26.02.03.0] - 2026-02-03
 ### Changed
