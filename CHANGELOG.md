@@ -10,6 +10,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 ### Added
 
 ### Changed
+- Standard Timeout auf 15 Min erhöht
 
 ### Fixed
 
