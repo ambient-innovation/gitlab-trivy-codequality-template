@@ -118,7 +118,7 @@ jobs:
             # Add the new entry to [Unreleased] section
             echo ""
             echo "### Changed"
-            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST}"
+            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST} ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v${LATEST}))"
             echo ""
             
             # Copy the rest of the file, skipping the old [Unreleased] content until next section
@@ -170,7 +170,7 @@ jobs:
             # Add the new entry to [Unreleased] section
             echo ""
             echo "### Changed"
-            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST}"
+            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST} ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v${LATEST}))"
             echo ""
             
             # Copy the rest of the file, skipping the old [Unreleased] content until next section

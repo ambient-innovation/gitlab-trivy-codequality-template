@@ -21,11 +21,11 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ## [26.03.04.0] - 2026-03-04
 ### Changed
-- Updated Trivy scanner from v0.69.1 to v0.69.3
+- Updated Trivy scanner from v0.69.1 to v0.69.3 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.69.3))
 
 ## [26.02.06.0] - 2026-02-06
 ### Changed
-- Updated Trivy scanner from v0.69.0 to v0.69.1
+- Updated Trivy scanner from v0.69.0 to v0.69.1 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.69.1))
 
 ## [26.02.03.1] - 2026-02-03
 ### Changed
@@ -33,23 +33,23 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ## [26.02.03.0] - 2026-02-03
 ### Changed
-- Updated Trivy scanner from v0.68.2 to v0.69.0
+- Updated Trivy scanner from v0.68.2 to v0.69.0 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.69.0))
 
 ## [26.01.12.0] - 2026-01-12
 ### Changed
-- Updated Trivy scanner from v0.68.1 to v0.68.2
+- Updated Trivy scanner from v0.68.1 to v0.68.2 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.68.2))
 
 ## [25.12.09.0] - 2025-12-09
 ### Changed
-- Updated Trivy scanner from v0.67.2 to v0.68.1
+- Updated Trivy scanner from v0.67.2 to v0.68.1 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.68.1))
 
 ## [25.10.13.0] - 2025-10-13
 ### Changed
-- Updated Trivy scanner from v0.67.0 to v0.67.2
+- Updated Trivy scanner from v0.67.0 to v0.67.2 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.67.2))
 
 ## [25.10.10.1] - 2025-10-10
 ### Changed
-- Updated Trivy scanner from v0.66.0 to v0.67.0
+- Updated Trivy scanner from v0.66.0 to v0.67.0 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.67.0))
 
 ## [25.10.10.0] - 2025-10-10
 ### Changed
@@ -57,7 +57,7 @@ and this project adheres to [Calendar Versioning](https://calver.org/) (YY.MM.DD
 
 ## [25.09.17.0] - 2025-09-17
 ### Changed
-- Updated Trivy scanner from v0.65.0 to v0.66.0
+- Updated Trivy scanner from v0.65.0 to v0.66.0 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.66.0))
 - Added a fault-tolerant cleanup workflow step: on a failed run the workflow will attempt to delete the update branch `update-trivy-<version>` locally and on the remote. If no such branch exists, the step exits without error.
 
 ## [25.08.19.0] - 2025-08-19
