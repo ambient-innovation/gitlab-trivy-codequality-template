@@ -33,7 +33,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [26.02.03.0] - 2026-02-03
 ### Changed
-- Updated Trivy scanner from v0.68.2 to v0.69.0 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.69.0))
+- Updated Trivy scanner from v0.68.2 to v0.69.0 ([Changelog](https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#0690-2026-01-30))
 
 ## [26.01.12.0] - 2026-01-12
 ### Changed
@@ -49,7 +49,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [25.10.10.1] - 2025-10-10
 ### Changed
-- Updated Trivy scanner from v0.66.0 to v0.67.0 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.67.0))
+- Updated Trivy scanner from v0.66.0 to v0.67.0 ([Changelog](https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#0670-2025-09-30))
 
 ## [25.10.10.0] - 2025-10-10
 ### Changed
@@ -57,7 +57,7 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [25.09.17.0] - 2025-09-17
 ### Changed
-- Updated Trivy scanner from v0.65.0 to v0.66.0 ([Release Notes](https://github.com/aquasecurity/trivy/releases/tag/v0.66.0))
+- Updated Trivy scanner from v0.65.0 to v0.66.0 ([Changelog](https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#0660-2025-09-02))
 - Neuer Workflow-Schritt zur Bereinigung: Bei einem fehlgeschlagenen Lauf versucht der Workflow, den Update-Branch `update-trivy-<version>` lokal und remote zu löschen, falls vorhanden. Der Schritt ist fehlertolerant und macht nichts, wenn kein Branch existiert.
 
 ## [25.08.19.0] - 2025-08-19
