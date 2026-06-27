@@ -80,6 +80,42 @@ jobs:
             echo "update_needed=true" >> $GITHUB_OUTPUT
           fi
           
+      - name: Compute changelog link
+        if: steps.check_update.outputs.update_needed == 'true'
+        id: changelog_link
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LATEST="${{ steps.trivy_version.outputs.latest_version }}"
+          PATCH=$(echo "$LATEST" | cut -d'.' -f3)
+
+          if [ "$PATCH" = "0" ]; then
+            echo "🔍 Major release detected – resolving tag date for CHANGELOG.md anchor..."
+
+            TAG_REF=$(gh api repos/aquasecurity/trivy/git/refs/tags/v${LATEST})
+            OBJ_TYPE=$(echo "$TAG_REF" | jq -r '.object.type')
+            OBJ_SHA=$(echo "$TAG_REF" | jq -r '.object.sha')
+
+            if [ "$OBJ_TYPE" = "tag" ]; then
+              # Annotated tag: tagger date
+              TAG_DATE=$(gh api repos/aquasecurity/trivy/git/tags/${OBJ_SHA} | jq -r '.tagger.date' | cut -d'T' -f1)
+            else
+              # Lightweight tag: committer date of the target commit
+              TAG_DATE=$(gh api repos/aquasecurity/trivy/git/commits/${OBJ_SHA} | jq -r '.committer.date' | cut -d'T' -f1)
+            fi
+
+            VERSION_NO_DOTS=$(echo "$LATEST" | tr -d '.')
+            LINK="https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#${VERSION_NO_DOTS}-${TAG_DATE}"
+            LINK_TEXT="Changelog"
+          else
+            LINK="https://github.com/aquasecurity/trivy/releases/tag/v${LATEST}"
+            LINK_TEXT="Release Notes"
+          fi
+
+          echo "link=${LINK}" >> $GITHUB_OUTPUT
+          echo "link_text=${LINK_TEXT}" >> $GITHUB_OUTPUT
+          echo "✅ Changelog link: ${LINK_TEXT} → ${LINK}"
+
       - name: Update trivy-scanning.template.yaml
         if: steps.check_update.outputs.update_needed == 'true'
         run: |
@@ -118,7 +154,7 @@ jobs:
             # Add the new entry to [Unreleased] section
             echo ""
             echo "### Changed"
-            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST}"
+            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST} ([${{ steps.changelog_link.outputs.link_text }}](${{ steps.changelog_link.outputs.link }}))"
             echo ""
             
             # Copy the rest of the file, skipping the old [Unreleased] content until next section
@@ -170,7 +206,7 @@ jobs:
             # Add the new entry to [Unreleased] section
             echo ""
             echo "### Changed"
-            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST}"
+            echo "- Updated Trivy scanner from v${CURRENT} to v${LATEST} ([${{ steps.changelog_link.outputs.link_text }}](${{ steps.changelog_link.outputs.link }}))"
             echo ""
             
             # Copy the rest of the file, skipping the old [Unreleased] content until next section
