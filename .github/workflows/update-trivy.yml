@@ -83,30 +83,36 @@ jobs:
       - name: Compute changelog link
         if: steps.check_update.outputs.update_needed == 'true'
         id: changelog_link
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           LATEST="${{ steps.trivy_version.outputs.latest_version }}"
           PATCH=$(echo "$LATEST" | cut -d'.' -f3)
 
           if [ "$PATCH" = "0" ]; then
             echo "🔍 Major release detected – resolving tag date for CHANGELOG.md anchor..."
+            TAG_REF=$(curl -fsSL "https://api.github.com/repos/aquasecurity/trivy/git/ref/tags/v${LATEST}" 2>/dev/null || true)
+            OBJ_TYPE=$(echo "$TAG_REF" | jq -r '.object.type // empty')
+            OBJ_SHA=$(echo "$TAG_REF" | jq -r '.object.sha // empty')
+            TAG_DATE=""
 
-            TAG_REF=$(gh api repos/aquasecurity/trivy/git/refs/tags/v${LATEST})
-            OBJ_TYPE=$(echo "$TAG_REF" | jq -r '.object.type')
-            OBJ_SHA=$(echo "$TAG_REF" | jq -r '.object.sha')
-
-            if [ "$OBJ_TYPE" = "tag" ]; then
-              # Annotated tag: tagger date
-              TAG_DATE=$(gh api repos/aquasecurity/trivy/git/tags/${OBJ_SHA} | jq -r '.tagger.date' | cut -d'T' -f1)
-            else
-              # Lightweight tag: committer date of the target commit
-              TAG_DATE=$(gh api repos/aquasecurity/trivy/git/commits/${OBJ_SHA} | jq -r '.committer.date' | cut -d'T' -f1)
+            if [ -n "$OBJ_SHA" ]; then
+              if [ "$OBJ_TYPE" = "tag" ]; then
+                # Annotated tag: tagger date
+                TAG_DATE=$(curl -fsSL "https://api.github.com/repos/aquasecurity/trivy/git/tags/${OBJ_SHA}" 2>/dev/null | jq -r '.tagger.date // empty' | cut -d'T' -f1)
+              else
+                # Lightweight tag: committer date of the target commit
+                TAG_DATE=$(curl -fsSL "https://api.github.com/repos/aquasecurity/trivy/commits/${OBJ_SHA}" 2>/dev/null | jq -r '.commit.committer.date // empty' | cut -d'T' -f1)
+              fi
             fi
 
-            VERSION_NO_DOTS=$(echo "$LATEST" | tr -d '.')
-            LINK="https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#${VERSION_NO_DOTS}-${TAG_DATE}"
-            LINK_TEXT="Changelog"
+            if [ -n "$TAG_DATE" ]; then
+              VERSION_NO_DOTS=$(echo "$LATEST" | tr -d '.')
+              LINK="https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#${VERSION_NO_DOTS}-${TAG_DATE}"
+              LINK_TEXT="Changelog"
+            else
+              echo "⚠️ Could not resolve tag date, falling back to release notes link"
+              LINK="https://github.com/aquasecurity/trivy/releases/tag/v${LATEST}"
+              LINK_TEXT="Release Notes"
+            fi
           else
             LINK="https://github.com/aquasecurity/trivy/releases/tag/v${LATEST}"
             LINK_TEXT="Release Notes"
