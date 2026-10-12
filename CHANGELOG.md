@@ -7,6 +7,19 @@ und dieses Projekt folgt [Calendar Versioning](https://calver.org/) (YY.MM.DD.MI
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+### Fixed
+
+### Deprecated
+
+### Removed
+
+### Security
+
+## [26.10.12.0] - 2026-10-12
 ### Changed
 - Updated Trivy scanner from v0.74.0 to v0.75.0 ([Changelog](https://github.com/aquasecurity/trivy/blob/main/CHANGELOG.md#0750-2026-10-01))
 
